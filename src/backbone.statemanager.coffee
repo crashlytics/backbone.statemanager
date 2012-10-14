@@ -6,88 +6,88 @@ http://github.com/crashlytics/backbone.statemanager
 ###
 
 Backbone.StateManager = ((Backbone, _) ->
-  # Set our constructor - just a hash of states
-  StateManager = ->
+
+  # Set our constructor - just a hash of states and a target
+  StateManager = (@target, states, @options = {}) ->
+    new Error 'Target must be defined' unless @target
     @states = {}
-    @
+
+    # Add each state into the stateManager
+    if _.isObject states then _.each states, (value, key) => @addState key, value
 
   # Give access to Backbone's extend method if they want it
   StateManager.extend = Backbone.View.extend
 
   # Extend the prototype to make functionality available for instantiations
-  _.extend StateManager.prototype,
+  _.extend StateManager.prototype, Backbone.Events,
     addState : (state, callbacks) -> @states[state] = callbacks
     removeState : (state) -> delete @states[state]
+    getCurrentState : -> @currentState
 
-    triggerState : (obj, state, options = {}) ->
-      return false unless matchedState = @_matchState state
-      currentState = @currentState
+    initialize : (options = {}) ->
+      # We trigger the initial state if it is set
+      if initial = _.chain(@states).keys().find((state) => @states[state].initial).value()
+        @triggerState initial, options
 
-      # Load new state if:
-      #   there is no current state
-      #   the strings for the states don't match exactly and they have too
-      #   they state objs don't match
-      if not currentState or (currentState isnt state and options.exactMatch) or @states[currentState] isnt matchedState
-        @exitState obj, currentState, matchedState, options
-        @enterState obj, matchedState, currentState, options
-        @
-      else if @options.reEnter
-        @exitState obj, currentState, matchedState, options
-        @enterState obj, matchedState, currentState, options
-        @
-      else
-        false
+    triggerState : (state, options = {}) ->
+      # return false unless matchedState = @_matchState state
+      # currentState = @currentState
 
-    enterState : (obj, state, options) ->
-      return false unless @states?[state] and _.isFunction @states[state].enter
+    #   # Load new state if:
+    #   #   there is no current state
+    #   #   the strings for the states don't match exactly and they have too
+    #   #   they state objs don't match
+    #   if not currentState or (currentState isnt state and options.exactMatch) or @states[currentState] isnt matchedState
+    #     @exitState obj, currentState, matchedState, options
+    #     @enterState obj, matchedState, currentState, options
+    #     @
+    #   else if @options.reEnter
+    #     @exitState obj, currentState, matchedState, options
+    #     @enterState obj, matchedState, currentState, options
+    #     @
+    #   else
+    #     false
 
-      obj.onBeforeStateEnter? state, options
-      obj.trigger 'before:state:enter', state, options
-      @states[state].enter.apply obj, options
-      @currentState = state
-      obj.onStateEnter? state, options
-      obj.trigger 'state:enter', state, options
-      obj
+    # enterState : (obj, state, options) ->
+    #   return false unless @states?[state] and _.isFunction @states[state].enter
 
-    exitState : (obj, state, options) ->
-      return false unless @states?[state] and _.isFunction @states[state].exit
-      obj.onBeforeStateExit? state, options
-      obj.trigger 'before:state:exit', state, options
-      @states[state].exit.apply obj, options
-      @previousState = state
-      delete @currentState
-      obj.onStateExit? state, options
-      obj.trigger 'state:exit', state, options
-      obj
+    #   obj.onBeforeStateEnter? state, options
+    #   obj.trigger 'before:state:enter', state, options
+    #   @states[state].enter.apply obj, options
+    #   @currentState = state
+    #   obj.onStateEnter? state, options
+    #   obj.trigger 'state:enter', state, options
+    #   obj
 
-    _matchState : (state) ->
-      # We want to allow states to be defined the same way as routes with splats and :params
-      return false unless @states
-      stateRegex = Backbone.Router.prototype state
-      _.chain(@states).keys().find((state) -> stateRegex.test state).value()
+    # exitState : (obj, state, options) ->
+    #   return false unless @states?[state] and _.isFunction @states[state].exit
+
+    #   obj.onBeforeStateExit? state, options
+    #   obj.trigger 'before:state:exit', state, options
+    #   @states[state].exit.apply obj, options
+    #   @previousState = state
+    #   delete @currentState
+    #   obj.onStateExit? state, options
+    #   obj.trigger 'state:exit', state, options
+    #   obj
+
+    # _matchState : (state) ->
+    #   # We want to allow states to be defined the same way as routes with splats and :params
+    #   return false unless @states
+    #   stateRegex = Backbone.Router.prototype state
+    #   _.chain(@states).keys().find((state) -> stateRegex.test state).value()
 
   # Function we can use to provide StateManager capabilities to views on construct
-  StateManager.addStateManager = (target) ->
-    stateManager = new Backbone.StateManager()
-    # target.stateManager = stateManager
-    target.addState = -> stateManager.addState.apply stateManager, arguments
-    target.removeState = -> stateManager.removeState.apply stateManager, arguments
-    target.triggerState = -> stateManager.triggerState.apply stateManager, _prependArguments(target, arguments)
-    target.enterState = -> stateManager.enterState.apply stateManager, _prependArguments(target, arguments)
-    target.exitState = -> stateManager.exitState.apply stateManager, _prependArguments(target, arguments)
-    target.getState = -> stateManager.getState()
-    target.getStates = -> stateManager._states
+  StateManager.addStateManager = (target, options = {}) ->
+    stateManager = new Backbone.StateManager target, target.states, options
+    target.triggerState = -> stateManager.triggerState.apply stateManager, arguments
+    target.getCurrentState = -> stateManager.getCurrentState()
 
-    # Add each state into the stateManager
-    if _.isObject target.states
-      _.each target.states, (key, value) -> StateManager.addState.call target.stateManager, key, value
-      delete target.states
+    # Initialize the state manager, unless explictly told not to
+    stateManager.initialize options if options.initialize or _.isUndefined options.initialize
 
-    # We need to set the initial state if it is declared
-    target.triggerState target.initialState if target.initialState
-
-  # Helper functions
-  _prependArguments = (val, args) -> (args = Array.prototype.slice.call args).unshift(val) and args
+    # Cleanup
+    delete target.states
 
   StateManager
 )(Backbone, _)

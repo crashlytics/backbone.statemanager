@@ -11,122 +11,66 @@ http://github.com/crashlytics/backbone.statemanager
 (function() {
 
   Backbone.StateManager = (function(Backbone, _) {
-    var StateManager, _prependArguments;
-    StateManager = function() {
+    var StateManager;
+    StateManager = function(target, states, options) {
+      var _this = this;
+      this.target = target;
+      this.options = options != null ? options : {};
+      if (!this.target) {
+        new Error('Target must be defined');
+      }
       this.states = {};
-      return this;
+      if (_.isObject(states)) {
+        return _.each(states, function(value, key) {
+          return _this.addState(key, value);
+        });
+      }
     };
     StateManager.extend = Backbone.View.extend;
-    _.extend(StateManager.prototype, {
+    _.extend(StateManager.prototype, Backbone.Events, {
       addState: function(state, callbacks) {
         return this.states[state] = callbacks;
       },
       removeState: function(state) {
         return delete this.states[state];
       },
-      triggerState: function(obj, state, options) {
-        var currentState, matchedState;
+      getCurrentState: function() {
+        return this.currentState;
+      },
+      initialize: function(options) {
+        var initial,
+          _this = this;
         if (options == null) {
           options = {};
         }
-        if (!(matchedState = this._matchState(state))) {
-          return false;
-        }
-        currentState = this.currentState;
-        if (!currentState || (currentState !== state && options.exactMatch) || this.states[currentState] !== matchedState) {
-          this.exitState(obj, currentState, matchedState, options);
-          this.enterState(obj, matchedState, currentState, options);
-          return this;
-        } else if (this.options.reEnter) {
-          this.exitState(obj, currentState, matchedState, options);
-          this.enterState(obj, matchedState, currentState, options);
-          return this;
-        } else {
-          return false;
+        if (initial = _.chain(this.states).keys().find(function(state) {
+          return _this.states[state].initial;
+        }).value()) {
+          return this.triggerState(initial, options);
         }
       },
-      enterState: function(obj, state, options) {
-        var _ref;
-        if (!(((_ref = this.states) != null ? _ref[state] : void 0) && _.isFunction(this.states[state].enter))) {
-          return false;
+      triggerState: function(state, options) {
+        if (options == null) {
+          options = {};
         }
-        if (typeof obj.onBeforeStateEnter === "function") {
-          obj.onBeforeStateEnter(state, options);
-        }
-        obj.trigger('before:state:enter', state, options);
-        this.states[state].enter.apply(obj, options);
-        this.currentState = state;
-        if (typeof obj.onStateEnter === "function") {
-          obj.onStateEnter(state, options);
-        }
-        obj.trigger('state:enter', state, options);
-        return obj;
-      },
-      exitState: function(obj, state, options) {
-        var _ref;
-        if (!(((_ref = this.states) != null ? _ref[state] : void 0) && _.isFunction(this.states[state].exit))) {
-          return false;
-        }
-        if (typeof obj.onBeforeStateExit === "function") {
-          obj.onBeforeStateExit(state, options);
-        }
-        obj.trigger('before:state:exit', state, options);
-        this.states[state].exit.apply(obj, options);
-        this.previousState = state;
-        delete this.currentState;
-        if (typeof obj.onStateExit === "function") {
-          obj.onStateExit(state, options);
-        }
-        obj.trigger('state:exit', state, options);
-        return obj;
-      },
-      _matchState: function(state) {
-        var stateRegex;
-        if (!this.states) {
-          return false;
-        }
-        stateRegex = Backbone.Router.prototype(state);
-        return _.chain(this.states).keys().find(function(state) {
-          return stateRegex.test(state);
-        }).value();
       }
     });
-    StateManager.addStateManager = function(target) {
+    StateManager.addStateManager = function(target, options) {
       var stateManager;
-      stateManager = new Backbone.StateManager();
-      target.addState = function() {
-        return stateManager.addState.apply(stateManager, arguments);
-      };
-      target.removeState = function() {
-        return stateManager.removeState.apply(stateManager, arguments);
-      };
+      if (options == null) {
+        options = {};
+      }
+      stateManager = new Backbone.StateManager(target, target.states, options);
       target.triggerState = function() {
-        return stateManager.triggerState.apply(stateManager, _prependArguments(target, arguments));
+        return stateManager.triggerState.apply(stateManager, arguments);
       };
-      target.enterState = function() {
-        return stateManager.enterState.apply(stateManager, _prependArguments(target, arguments));
+      target.getCurrentState = function() {
+        return stateManager.getCurrentState();
       };
-      target.exitState = function() {
-        return stateManager.exitState.apply(stateManager, _prependArguments(target, arguments));
-      };
-      target.getState = function() {
-        return stateManager.getState();
-      };
-      target.getStates = function() {
-        return stateManager._states;
-      };
-      if (_.isObject(target.states)) {
-        _.each(target.states, function(key, value) {
-          return StateManager.addState.call(target.stateManager, key, value);
-        });
-        delete target.states;
+      if (options.initialize || _.isUndefined(options.initialize)) {
+        stateManager.initialize(options);
       }
-      if (target.initialState) {
-        return target.triggerState(target.initialState);
-      }
-    };
-    _prependArguments = function(val, args) {
-      return (args = Array.prototype.slice.call(args)).unshift(val) && args;
+      return delete target.states;
     };
     return StateManager;
   })(Backbone, _);
