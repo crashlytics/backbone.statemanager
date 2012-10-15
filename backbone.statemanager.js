@@ -11,14 +11,10 @@ http://github.com/crashlytics/backbone.statemanager
 (function() {
 
   Backbone.StateManager = (function(Backbone, _) {
-    var StateManager;
-    StateManager = function(target, states, options) {
+    var StateManager, _recursiveBindAll;
+    StateManager = function(states, options) {
       var _this = this;
-      this.target = target;
       this.options = options != null ? options : {};
-      if (!this.target) {
-        new Error('Target must be defined');
-      }
       this.states = {};
       if (_.isObject(states)) {
         return _.each(states, function(value, key) {
@@ -60,7 +56,11 @@ http://github.com/crashlytics/backbone.statemanager
       if (options == null) {
         options = {};
       }
-      stateManager = new Backbone.StateManager(target, target.states, options);
+      if (!target) {
+        new Error('Target must be defined');
+      }
+      _recursiveBindAll(target, target.states);
+      stateManager = new Backbone.StateManager(target.states, options);
       target.triggerState = function() {
         return stateManager.triggerState.apply(stateManager, arguments);
       };
@@ -71,6 +71,15 @@ http://github.com/crashlytics/backbone.statemanager
         stateManager.initialize(options);
       }
       return delete target.states;
+    };
+    _recursiveBindAll = function(target, object) {
+      return _.each(object, function(property) {
+        if (_.isFunction(property)) {
+          return _.bind(property, target);
+        } else if (_.isObject(property)) {
+          return _recursiveBindAll(target, property);
+        }
+      });
     };
     return StateManager;
   })(Backbone, _);
