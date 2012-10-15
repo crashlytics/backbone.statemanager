@@ -1,5 +1,4 @@
 describe 'Backbone.StateManager', =>
-
   beforeEach => @states = _.clone spec.helper.states
 
   afterEach => delete @states
@@ -7,7 +6,6 @@ describe 'Backbone.StateManager', =>
   it 'exists under Backbone.StateManager', -> expect(Backbone.StateManager).toBeDefined()
 
   describe 'constructor', =>
-
     it 'creates a states object', =>
       stateManager = new Backbone.StateManager
       expect(stateManager.states).toBeDefined()
@@ -18,13 +16,11 @@ describe 'Backbone.StateManager', =>
       expect(stateManager.addState).toHaveBeenCalledWith 'noTransitions', jasmine.any Object
 
   describe 'prototype', =>
-
     beforeEach => @stateManager = new Backbone.StateManager @states
 
     afterEach => delete @stateManager
 
     describe 'initialize', =>
-
       it 'calls triggerState on the first state found that has initial : true set on it', =>
         spyOn Backbone.StateManager.prototype, 'triggerState'
 
@@ -32,7 +28,6 @@ describe 'Backbone.StateManager', =>
         expect(@stateManager.triggerState).toHaveBeenCalledWith 'withInitial', jasmine.any Object
 
     describe 'addState', =>
-
       it 'sets the state passed to states with the states callback', =>
         @stateManager.addState 'noTransitions', @states.noTransitions
         expect(@stateManager.states.noTransitions).toEqual @states.noTransitions
@@ -43,7 +38,6 @@ describe 'Backbone.StateManager', =>
         expect(@stateManager.trigger).toHaveBeenCalledWith 'add:state', 'noTransitions'
 
     describe 'removeState', =>
-
       it 'removes the state', =>
         @stateManager.removeState 'noTransitions'
         expect(@stateManager.states.noTransitions).toBeUndefined()
@@ -54,13 +48,11 @@ describe 'Backbone.StateManager', =>
         expect(@stateManager.trigger).toHaveBeenCalledWith 'remove:state', 'noTransitions'
 
      describe 'getCurrentState', =>
-
       it 'returns the current state', =>
         @stateManager.currentState = @states.noTransitions
         expect(@stateManager.getCurrentState()).toEqual @states.noTransitions
 
     describe 'triggerState', =>
-
       beforeEach =>
         spyOn(@stateManager, '_matchState').andReturn true
         spyOn @stateManager, 'enterState'
@@ -87,7 +79,6 @@ describe 'Backbone.StateManager', =>
         expect(@stateManager.enterState).toHaveBeenCalledWith 'foo', jasmine.any Object
 
       describe 'the current state is the same as the new state', =>
-
         it 'does nothing unless options.reEnter is set', =>
           @stateManager._matchState.andReturn @states.noTransitions
           @stateManager.currentState = 'noTransitions'
@@ -114,7 +105,6 @@ describe 'Backbone.StateManager', =>
         expect(@stateManager._matchState 'foo bar').toBeFalsy()
 
   describe 'addStateManager', =>
-
     it 'creates a new StateManager', =>
       StateManager = Backbone.StateManager
       spy = spyOn(Backbone, 'StateManager').andCallThrough()
