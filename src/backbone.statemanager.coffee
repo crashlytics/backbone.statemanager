@@ -88,7 +88,7 @@ Backbone.StateManager = ((Backbone, _) ->
   StateManager.addStateManager = (target, options = {}) ->
     new Error 'Target must be defined' unless target
     _deepBindAll target.states, target
-    stateManager = new Backbone.StateManager target.states, options
+    target.stateManager = stateManager = new Backbone.StateManager target.states, options
     target.triggerState = -> stateManager.triggerState.apply stateManager, arguments
     target.getCurrentState = -> stateManager.getCurrentState()
 

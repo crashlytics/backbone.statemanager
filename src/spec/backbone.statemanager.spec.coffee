@@ -212,6 +212,7 @@ describe 'Backbone.StateManager', =>
       target = states : @_states
       Backbone.StateManager.addStateManager target
       expect(Backbone.StateManager).toHaveBeenCalledWith jasmine.any(Object), jasmine.any(Object)
+      expect(target.stateManager).toBeDefined()
 
     it 'binds all of targets states methods to the target', =>
       spyOn _, 'bind'

@@ -134,7 +134,7 @@ http://github.com/crashlytics/backbone.statemanager
         new Error('Target must be defined');
       }
       _deepBindAll(target.states, target);
-      stateManager = new Backbone.StateManager(target.states, options);
+      target.stateManager = stateManager = new Backbone.StateManager(target.states, options);
       target.triggerState = function() {
         return stateManager.triggerState.apply(stateManager, arguments);
       };

@@ -247,7 +247,8 @@
           states: _this._states
         };
         Backbone.StateManager.addStateManager(target);
-        return expect(Backbone.StateManager).toHaveBeenCalledWith(jasmine.any(Object), jasmine.any(Object));
+        expect(Backbone.StateManager).toHaveBeenCalledWith(jasmine.any(Object), jasmine.any(Object));
+        return expect(target.stateManager).toBeDefined();
       });
       it('binds all of targets states methods to the target', function() {
         var target;
