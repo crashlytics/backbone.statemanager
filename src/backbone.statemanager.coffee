@@ -46,11 +46,11 @@ Backbone.StateManager = ((Backbone, _) ->
       @trigger 'before:enter:state', name, state, options
 
       # Find the the state we will be transitioning to and if it has a onBeforeEnterFrom method, call it
-      state.findTransition('onBeforeEnterFrom', options.toState)? options
+      state.findTransition('onBeforeEnterFrom', options.fromState)? options
 
       state.enter options
 
-      state.findTransition('onEnterFrom', options.toState)? options
+      state.findTransition('onEnterFrom', options.fromState)? options
 
       @trigger 'enter:state', name, state, options
 

@@ -65,11 +65,11 @@ http://github.com/crashlytics/backbone.statemanager
           return false;
         }
         this.trigger('before:enter:state', name, state, options);
-        if (typeof (_base = state.findTransition('onBeforeEnterFrom', options.toState)) === "function") {
+        if (typeof (_base = state.findTransition('onBeforeEnterFrom', options.fromState)) === "function") {
           _base(options);
         }
         state.enter(options);
-        if (typeof (_base1 = state.findTransition('onEnterFrom', options.toState)) === "function") {
+        if (typeof (_base1 = state.findTransition('onEnterFrom', options.fromState)) === "function") {
           _base1(options);
         }
         this.trigger('enter:state', name, state, options);
