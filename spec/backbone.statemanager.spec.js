@@ -5,15 +5,74 @@
     it('exists under Backbone.StateManager', function() {
       return expect(Backbone.StateManager).toBeDefined();
     });
+    describe('constructor', function() {
+      it('creates a states object', function() {
+        var stateManager;
+        stateManager = new Backbone.StateManager;
+        return expect(stateManager.states).toBeDefined();
+      });
+      return it('calls addState with passed state', function() {
+        var stateManager;
+        spyOn(Backbone.StateManager.prototype, 'addState');
+        stateManager = new Backbone.StateManager({
+          foo: function() {}
+        });
+        return expect(stateManager.addState).toHaveBeenCalledWith('foo', jasmine.any(Function));
+      });
+    });
+    describe('addState', function() {
+      return it('sets the state passed to states with the states callback', function() {
+        var bar, stateManager;
+        stateManager = new Backbone.StateManager;
+        stateManager.addState('foo', bar = function() {});
+        return expect(stateManager.states.foo).toEqual(bar);
+      });
+    });
+    describe('removeState', function() {
+      return it('removes the state', function() {
+        var stateManager;
+        stateManager = new Backbone.StateManager;
+        stateManager.states = {
+          foo: function() {}
+        };
+        stateManager.removeState('foo');
+        return expect(stateManager.states.foo).toBeUndefined();
+      });
+    });
+    describe('getCurrentState', function() {
+      return it('returns the current state', function() {
+        var currentState, foo, stateManager;
+        stateManager = new Backbone.StateManager;
+        stateManager.currentState = foo = {};
+        currentState = stateManager.getCurrentState();
+        return expect(currentState).toEqual(foo);
+      });
+    });
     describe('addStateManager', function() {
       it('creates a new StateManager', function() {
-        var StateManager, spy;
+        var StateManager, spy, target;
         StateManager = Backbone.StateManager;
         spy = spyOn(Backbone, 'StateManager').andCallThrough();
         spy.__proto__ = StateManager;
         spy.prototype = StateManager.prototype;
-        Backbone.StateManager.addStateManager({});
-        return expect(Backbone.StateManager).toHaveBeenCalled();
+        target = {
+          states: {
+            foo: 'bar'
+          }
+        };
+        Backbone.StateManager.addStateManager(target);
+        return expect(Backbone.StateManager).toHaveBeenCalledWith(jasmine.any(Object), jasmine.any(Object));
+      });
+      it('binds all of targets states methods to the target', function() {
+        var target;
+        spyOn(_, 'bind');
+        target = {
+          states: {
+            foo: function() {}
+          }
+        };
+        Backbone.StateManager.addStateManager(target);
+        return expect(_.bind).toHaveBeenCalledWith(jasmine.any(Function), target);
       });
       it('allows callthrough on the target for triggerState', function() {
         var target;
@@ -57,8 +116,7 @@
     return describe('prototype', function() {
       return describe('initialize', function() {
         return it('calls triggerState on the first state found that has initial : true set on it', function() {
-          var stateManager, states, target;
-          target = {};
+          var stateManager, states;
           states = {
             foo: {
               initial: true
@@ -66,7 +124,7 @@
             bar: {}
           };
           spyOn(Backbone.StateManager.prototype, 'triggerState');
-          stateManager = new Backbone.StateManager(target, states);
+          stateManager = new Backbone.StateManager(states);
           stateManager.initialize();
           return expect(stateManager.triggerState).toHaveBeenCalledWith('foo', jasmine.any(Object));
         });

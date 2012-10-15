@@ -2,6 +2,40 @@ describe 'Backbone.StateManager', ->
 
   it 'exists under Backbone.StateManager', -> expect(Backbone.StateManager).toBeDefined()
 
+  describe 'constructor', ->
+
+    it 'creates a states object', ->
+      stateManager = new Backbone.StateManager
+      expect(stateManager.states).toBeDefined()
+
+    it 'calls addState with passed state', ->
+      spyOn Backbone.StateManager.prototype, 'addState'
+      stateManager = new Backbone.StateManager foo : ->
+      expect(stateManager.addState).toHaveBeenCalledWith 'foo', jasmine.any(Function)
+
+  describe 'addState', ->
+
+    it 'sets the state passed to states with the states callback', ->
+      stateManager = new Backbone.StateManager
+      stateManager.addState 'foo', bar = ->
+      expect(stateManager.states.foo).toEqual bar
+
+  describe 'removeState', ->
+
+    it 'removes the state', ->
+      stateManager = new Backbone.StateManager
+      stateManager.states = foo : ->
+      stateManager.removeState 'foo'
+      expect(stateManager.states.foo).toBeUndefined()
+
+   describe 'getCurrentState', ->
+
+    it 'returns the current state', ->
+      stateManager = new Backbone.StateManager
+      stateManager.currentState = foo = {}
+      currentState = stateManager.getCurrentState()
+      expect(currentState).toEqual foo
+
   describe 'addStateManager', ->
 
     it 'creates a new StateManager', ->
@@ -9,8 +43,15 @@ describe 'Backbone.StateManager', ->
       spy = spyOn(Backbone, 'StateManager').andCallThrough()
       spy.__proto__ = StateManager
       spy.prototype = StateManager.prototype
-      Backbone.StateManager.addStateManager {}
-      expect(Backbone.StateManager).toHaveBeenCalled()
+      target = states : foo : 'bar'
+      Backbone.StateManager.addStateManager target
+      expect(Backbone.StateManager).toHaveBeenCalledWith jasmine.any(Object), jasmine.any(Object)
+
+    it 'binds all of targets states methods to the target', ->
+      spyOn _, 'bind'
+      target = states : foo : ->
+      Backbone.StateManager.addStateManager target
+      expect(_.bind).toHaveBeenCalledWith jasmine.any(Function), target
 
     it 'allows callthrough on the target for triggerState', ->
       target = foo : 'bar'
@@ -52,14 +93,13 @@ describe 'Backbone.StateManager', ->
     describe 'initialize', ->
 
       it 'calls triggerState on the first state found that has initial : true set on it', ->
-        target = {}
         states =
           foo :
             initial : true
           bar : {}
 
         spyOn Backbone.StateManager.prototype, 'triggerState'
-        stateManager = new Backbone.StateManager target, states
+        stateManager = new Backbone.StateManager states
 
         stateManager.initialize()
         expect(stateManager.triggerState).toHaveBeenCalledWith 'foo', jasmine.any Object
