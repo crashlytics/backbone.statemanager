@@ -103,6 +103,11 @@ Backbone.StateManager = ((Backbone, _) ->
     matchName : (name) -> @regExpName.test name
 
     findTransition : (type, name) ->
+      return false unless @transitions and _.isString(name) and _.isString type
+      _.find @transitions, (value, key) =>
+        key.indexOf("#{ type }:") is 0 and
+          StateManager.State._regExpStateConversion(key.substring(type.length + 1)).test name
+
 
   # Helper to convert state names into RegExp for matching
   StateManager.State._regExpStateConversion = (name) ->

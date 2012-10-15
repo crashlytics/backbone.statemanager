@@ -145,7 +145,15 @@ http://github.com/crashlytics/backbone.statemanager
       matchName: function(name) {
         return this.regExpName.test(name);
       },
-      findTransition: function(type, name) {}
+      findTransition: function(type, name) {
+        var _this = this;
+        if (!(this.transitions && _.isString(name) && _.isString(type))) {
+          return false;
+        }
+        return _.find(this.transitions, function(value, key) {
+          return key.indexOf("" + type + ":") === 0 && StateManager.State._regExpStateConversion(key.substring(type.length + 1)).test(name);
+        });
+      }
     });
     StateManager.State._regExpStateConversion = function(name) {
       name = name.replace(/[-[\]{}()+?.,\\^$|#\s]/g, '\\$&').replace(/:\w+/g, '([^\/]+)').replace(/\*\w+/g, '(.*?)');

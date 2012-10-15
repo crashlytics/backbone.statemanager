@@ -2,7 +2,7 @@
 (function() {
   var _this = this;
 
-  describe('Backbone.StateManager.States', function() {
+  describe('Backbone.StateManager.State', function() {
     beforeEach(function() {
       return _this._states = _.clone(spec.helper.states);
     });
@@ -16,7 +16,28 @@
         return expect(state.regExpName).toBeDefined();
       });
     });
-    return describe('prototype', function() {});
+    return describe('prototype', function() {
+      describe('matchName', function() {
+        return it('creates a regular expression out of the name', function() {
+          var test;
+          test = new Backbone.StateManager.State('foo', _this._states[0]);
+          spyOn(test.regExpName, 'test');
+          test.matchName('foo');
+          return expect(test.regExpName.test).toHaveBeenCalledWith('foo');
+        });
+      });
+      return describe('findTransition', function() {
+        return it('finds functions who have a key matching the type and name', function() {
+          var test;
+          test = new Backbone.StateManager.State('foo', {
+            transitions: {
+              'onFoo:Bar*splat': function() {}
+            }
+          });
+          return expect(test.findTransition('onFoo', 'Bar123')).toEqual(jasmine.any(Function));
+        });
+      });
+    });
   });
 
 }).call(this);
