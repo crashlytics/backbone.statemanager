@@ -106,33 +106,77 @@ describe 'Backbone.StateManager', =>
 
     describe 'exitState', =>
 
-      it 'returns false if currentState does not exist', => expect(@stateManager.exitState 'foo').toBeFalsy()
+      describe 'with invalid parameters', =>
 
-      it 'returns false if the states exit property is not a method', =>
-        expect(@stateManager.exitState 'nonMethodExit').toBeFalsy()
+        it 'returns false if the states exit property is not a method', =>
+          spyOn(@stateManager, '_matchState').andReturn @states.nonMethodExit
+          expect(@stateManager.exitState()).toBeFalsy()
 
-      it 'triggers before:exit:state', =>
-        spyOn @stateManager, 'trigger'
-        spyOn(@stateManager, '_matchState').andReturn @states.noTransitions
-        @stateManager.currentState = 'noTransitions'
-        @stateManager.exitState()
-        expect(@stateManager.trigger)
-          .toHaveBeenCalledWith 'before:exit:state', 'noTransitions', @states.noTransitions, jasmine.any Object
+        it 'returns false if the currentState does not exist', =>
+          spyOn(@stateManager, '_matchState').andReturn false
+          expect(@stateManager.exitState()).toBeFalsy()
 
-      it 'calls the exit method on the state', =>
-        spyOn(@stateManager, '_matchState').andReturn @states.noTransitions
-        spyOn @states.noTransitions, 'exit'
-        @stateManager.currentState = 'noTransitions'
-        @stateManager.exitState()
-        expect(@states.noTransitions.exit).toHaveBeenCalledWith jasmine.any Object
+      describe 'with valid parameters', =>
 
-      it 'triggers exit:state', =>
-        spyOn @stateManager, 'trigger'
-        spyOn(@stateManager, '_matchState').andReturn @states.noTransitions
-        @stateManager.currentState = 'noTransitions'
-        @stateManager.exitState()
-        expect(@stateManager.trigger)
-          .toHaveBeenCalledWith 'exit:state', 'noTransitions', @states.noTransitions, jasmine.any Object
+        beforeEach =>
+          spyOn @stateManager, 'trigger'
+          spyOn @states.noTransitions, 'exit'
+          spyOn(@stateManager, '_matchState').andReturn @states.noTransitions
+          @stateManager.currentState = 'noTransitions'
+          @stateManager.exitState()
+
+        afterEach => delete @stateManager.currentState
+
+        it 'triggers before:exit:state', =>
+          expect(@stateManager.trigger)
+            .toHaveBeenCalledWith 'before:exit:state', 'noTransitions', @states.noTransitions, jasmine.any Object
+
+        it 'calls the exit method on the state', =>
+          expect(@states.noTransitions.exit).toHaveBeenCalledWith jasmine.any Object
+
+        it 'triggers exit:state', =>
+          expect(@stateManager.trigger)
+            .toHaveBeenCalledWith 'exit:state', 'noTransitions', @states.noTransitions, jasmine.any Object
+
+        it 'deletes the currentState', => expect(@stateManager.currentState).toBeUndefined()
+
+      describe 'transitions', =>
+
+    describe 'enterState', =>
+
+      describe 'with invalid parameters', =>
+
+        it 'returns false if the states enter property is not a method', =>
+          spyOn(@stateManager, '_matchState').andReturn @states.nonMethodEnter
+          expect(@stateManager.enterState 'noTransitions').toBeFalsy()
+
+        it 'returns false if the currentState does not exist', =>
+          spyOn(@stateManager, '_matchState').andReturn false
+          expect(@stateManager.enterState 'noTransitions').toBeFalsy()
+
+      describe 'with valid parameters', =>
+
+        beforeEach =>
+          spyOn @stateManager, 'trigger'
+          spyOn @states.noTransitions, 'enter'
+          spyOn(@stateManager, '_matchState').andReturn @states.noTransitions
+          @stateManager.currentState = 'noTransitions'
+          @stateManager.enterState 'noTransitions'
+
+        afterEach => delete @stateManager.currentState
+
+        it 'triggers before:enter:state', =>
+          expect(@stateManager.trigger)
+            .toHaveBeenCalledWith 'before:enter:state', 'noTransitions', @states.noTransitions, jasmine.any Object
+
+        it 'calls the enter method on the state', =>
+          expect(@states.noTransitions.enter).toHaveBeenCalledWith jasmine.any Object
+
+        it 'triggers enter:state', =>
+          expect(@stateManager.trigger)
+            .toHaveBeenCalledWith 'enter:state', 'noTransitions', @states.noTransitions, jasmine.any Object
+
+        it 'sets the currentState', => expect(@stateManager.currentState).toEqual 'noTransitions'
 
       describe 'transitions', =>
 
