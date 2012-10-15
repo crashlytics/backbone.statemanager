@@ -145,63 +145,63 @@ describe 'Backbone.StateManager', =>
             .toHaveBeenCalledWith 'onExitTo', 'enterTransition'
           expect(@transitionCallback).toHaveBeenCalledWith jasmine.any(Object)
 
-    # describe 'enterState', =>
-    #   beforeEach => spyOn @stateManager.states, 'find'
+    describe 'enterState', =>
+      beforeEach => spyOn @stateManager.states, 'find'
 
-    #   describe 'with invalid parameters', =>
+      describe 'with invalid parameters', =>
 
-    #     it 'returns false if the states enter property is not a method', =>
-    #       @stateManager.states.find.andReturn @_states.nonMethodEnter
-    #       expect(@stateManager.enterState 'noTransitions').toBeFalsy()
+        it 'returns false if the states enter property is not a method', =>
+          @stateManager.states.find.andReturn @_states.nonMethodEnter
+          expect(@stateManager.enterState 'noTransitions').toBeFalsy()
 
-    #     it 'returns false if the currentState does not exist', =>
-    #       @stateManager.states.find.andReturn false
-    #       expect(@stateManager.enterState 'noTransitions').toBeFalsy()
+        it 'returns false if the currentState does not exist', =>
+          @stateManager.states.find.andReturn false
+          expect(@stateManager.enterState 'noTransitions').toBeFalsy()
 
-    #   describe 'with valid parameters', =>
+      describe 'with valid parameters', =>
 
-    #     beforeEach =>
-    #       spyOn @stateManager, 'trigger'
-    #       spyOn @_states.noTransitions, 'enter'
-    #       @stateManager.states.find.andReturn @_states.noTransitions
-    #       @stateManager.currentState = 'noTransitions'
-    #       @stateManager.enterState 'noTransitions'
+        beforeEach =>
+          spyOn @stateManager, 'trigger'
+          spyOn @_states.noTransitions, 'enter'
+          @stateManager.states.find.andReturn new Backbone.StateManager.State 'noTransitions', @_states.noTransitions
+          @stateManager.currentState = 'noTransitions'
+          @stateManager.enterState 'noTransitions'
 
-    #     afterEach => delete @stateManager.currentState
+        afterEach => delete @stateManager.currentState
 
-    #     it 'triggers before:enter:state', =>
-    #       expect(@stateManager.trigger)
-    #         .toHaveBeenCalledWith 'before:enter:state', 'noTransitions', @_states.noTransitions, jasmine.any Object
+        it 'triggers before:enter:state', =>
+          expect(@stateManager.trigger)
+            .toHaveBeenCalledWith 'before:enter:state', 'noTransitions', jasmine.any(Object), jasmine.any Object
 
-    #     it 'calls the enter method on the state', =>
-    #       expect(@_states.noTransitions.enter).toHaveBeenCalledWith jasmine.any Object
+        it 'calls the enter method on the state', =>
+          expect(@_states.noTransitions.enter).toHaveBeenCalledWith jasmine.any Object
 
-    #     it 'triggers enter:state', =>
-    #       expect(@stateManager.trigger)
-    #         .toHaveBeenCalledWith 'enter:state', 'noTransitions', @_states.noTransitions, jasmine.any Object
+        it 'triggers enter:state', =>
+          expect(@stateManager.trigger)
+            .toHaveBeenCalledWith 'enter:state', 'noTransitions', jasmine.any(Object), jasmine.any Object
 
-    #     it 'sets the currentState', => expect(@stateManager.currentState).toEqual 'noTransitions'
+        it 'sets the currentState', => expect(@stateManager.currentState).toEqual 'noTransitions'
 
-    #   describe 'on states with transitions set', =>
-    #     beforeEach =>
-    #       @stateManager.states.find.andReturn enter : (->), __proto__ : Backbone.StateManager.State.prototype
-    #       @transitionCallback = jasmine.createSpy 'transitionCallback'
-    #       spyOn(Backbone.StateManager.State.prototype, 'findTransition').andReturn @transitionCallback
-    #       @stateManager.enterState fromState : 'exitTransition'
+      describe 'on states with transitions set', =>
+        beforeEach =>
+          @stateManager.states.find.andReturn enter : (->), __proto__ : Backbone.StateManager.State.prototype
+          @transitionCallback = jasmine.createSpy 'transitionCallback'
+          spyOn(Backbone.StateManager.State.prototype, 'findTransition').andReturn @transitionCallback
+          @stateManager.enterState 'enterTransition', fromState : 'exitTransition'
 
-    #     afterEach =>
-    #       delete @stateManager.currentState
-    #       delete @transitionCallback
+        afterEach =>
+          delete @stateManager.currentState
+          delete @transitionCallback
 
-    #     it 'calls onBeforeEnterFrom if it exists for the state passed', =>
-    #       expect(Backbone.StateManager.State.prototype.findTransition)
-    #         .toHaveBeenCalledWith 'onBeforeEnterFrom', 'exitTransition'
-    #       expect(@transitionCallback).toHaveBeenCalledWith jasmine.any(Object)
+        it 'calls onBeforeEnterFrom if it exists for the state passed', =>
+          expect(Backbone.StateManager.State.prototype.findTransition)
+            .toHaveBeenCalledWith 'onBeforeEnterFrom', 'exitTransition'
+          expect(@transitionCallback).toHaveBeenCalledWith jasmine.any(Object)
 
-    #     it 'calls onEnterFrom if it exists for the state passed', =>
-    #       expect(Backbone.StateManager.State.prototype.findTransition)
-    #         .toHaveBeenCalledWith 'onEnterFrom', 'exitTransition'
-    #       expect(@transitionCallback).toHaveBeenCalledWith jasmine.any(Object)
+        it 'calls onEnterFrom if it exists for the state passed', =>
+          expect(Backbone.StateManager.State.prototype.findTransition)
+            .toHaveBeenCalledWith 'onEnterFrom', 'exitTransition'
+          expect(@transitionCallback).toHaveBeenCalledWith jasmine.any(Object)
 
 
   describe 'addStateManager', =>
