@@ -7,37 +7,33 @@ http://github.com/crashlytics/backbone.statemanager
 
 Backbone.StateManager = ((Backbone, _) ->
 
-  # Set our constructor - just a hash of states and a target
+  # Set our constructor - just a States object
   StateManager = (states, @options = {}) ->
-    @states = {}
-
-    # Add each state into the stateManager
-    if _.isObject states then _.each states, (value, key) => @addState key, value
+    @states = new StateManager.States states
+    @
 
   # Give access to Backbone's extend method if they want it
   StateManager.extend = Backbone.View.extend
 
   # Extend the prototype to make functionality available for instantiations
   _.extend StateManager.prototype, Backbone.Events,
-    addState : (state, callbacks) ->
-      @states[state] = callbacks
-      @trigger 'add:state', state
-
-    removeState : (state) ->
-      delete @states[state]
-      @trigger 'remove:state', state
 
     getCurrentState : -> @currentState
 
+    addState : (name, callbacks) ->
+      @states.add name, callbacks
+      @trigger 'add:state', name
+
+    removeState : (name) ->
+      @states.remove name
+      @trigger 'remove:state', name
+
     initialize : (options = {}) ->
       # We trigger the initial state if it is set
-      if initial = _.chain(@states).keys().find((state) => @states[state].initial).value()
-        @triggerState initial, options
+      @triggerState initial, options if initial = @states.findInitial()
 
     triggerState : (state, options = {}) ->
-      return false unless newState = @_matchState state
-
-      unless newState is @states[@currentState] and not options.reEnter
+      unless state is @currentState and not options.reEnter
         @exitState options if @currentState
         @enterState state, options
       else
@@ -55,7 +51,7 @@ Backbone.StateManager = ((Backbone, _) ->
     #   obj
 
     exitState : (options = {}) ->
-      return false unless (matchedState = @_matchState @currentState) and _.isFunction matchedState.exit
+      return false unless (matchedState = @states.find @currentState) and _.isFunction matchedState.exit
       @trigger 'before:exit:state', @currentState, matchedState, options
       matchedState.exit options
       @trigger 'exit:state', @currentState, matchedState, options
@@ -67,21 +63,36 @@ Backbone.StateManager = ((Backbone, _) ->
     #   obj.trigger 'state:exit', state, options
     #   obj
 
-    _matchState : (state) ->
-      return false unless _.isString state
+  # Setup our states object
+  StateManager.States = (states) ->
+    @states = {}
+    if states and _.isObject states then _.each states, (value, key) => @add key, value
+    @
 
-      # We want to allow states to be defined the same way as routes with splats and :params
-      state = state.replace(/[-[\]{}()+?.,\\^$|#\s]/g, '\\$&')
+  _.extend StateManager.States.prototype,
+    add : (state, callbacks) ->
+      callbacks.regExp = StateManager.States._regExpStateConversion state
+      @states[state] = callbacks
+
+    remove : (state) -> delete @[state]
+
+    find : (name) ->
+      return false unless _.isString name
+      _.chain(@states).find((state) -> state.regExp?.test name).value()
+
+    findInitial : -> _.chain(@states).keys().find((state) => @states[state].initial).value()
+
+  # Helper to convert state names into RegExp for matching
+  StateManager.States._regExpStateConversion = (state) ->
+    state = state.replace(/[-[\]{}()+?.,\\^$|#\s]/g, '\\$&')
                    .replace(/:\w+/g, '([^\/]+)')
                    .replace(/\*\w+/g, '(.*?)')
-
-      stateRegex = new RegExp "^#{ state }$"
-      _.chain(@states).keys().find((state) -> stateRegex.test state).value()
+    new RegExp "^#{ state }$"
 
   # Function we can use to provide StateManager capabilities to views on construct
   StateManager.addStateManager = (target, options = {}) ->
     new Error 'Target must be defined' unless target
-    _.deepBindAll target.states, target
+    _deepBindAll target.states, target
     stateManager = new Backbone.StateManager target.states, options
     target.triggerState = -> stateManager.triggerState.apply stateManager, arguments
     target.getCurrentState = -> stateManager.getCurrentState()
@@ -93,13 +104,13 @@ Backbone.StateManager = ((Backbone, _) ->
     delete target.states
 
   # Recursively finds methods in an object and binds them to target
-  _.deepBindAll = (obj) ->
+  _deepBindAll = (obj) ->
     target = _.last arguments
     _.each obj, (value, key) ->
       if _.isFunction value
         obj[key] = _.bind value, target
       else if _.isObject value
-        obj[key] = _.deepBindAll(value, target)
+        obj[key] = _deepBindAll(value, target)
     obj
 
   StateManager

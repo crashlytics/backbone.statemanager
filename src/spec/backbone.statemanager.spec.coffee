@@ -11,9 +11,9 @@ describe 'Backbone.StateManager', =>
       expect(stateManager.states).toBeDefined()
 
     it 'calls addState with passed state', =>
-      spyOn Backbone.StateManager.prototype, 'addState'
+      spyOn Backbone.StateManager.States.prototype, 'add'
       stateManager = new Backbone.StateManager @states
-      expect(stateManager.addState).toHaveBeenCalledWith 'noTransitions', jasmine.any Object
+      expect(stateManager.states.add).toHaveBeenCalledWith 'noTransitions', jasmine.any Object
 
   describe 'prototype', =>
     beforeEach => @stateManager = new Backbone.StateManager @states
@@ -28,9 +28,12 @@ describe 'Backbone.StateManager', =>
         expect(@stateManager.triggerState).toHaveBeenCalledWith 'withInitial', jasmine.any Object
 
     describe 'addState', =>
+      beforeEach => spyOn @stateManager.states, 'add'
+
       it 'sets the state passed to states with the states callback', =>
         @stateManager.addState 'noTransitions', @states.noTransitions
-        expect(@stateManager.states.noTransitions).toEqual @states.noTransitions
+        expect(@stateManager.states.add).toHaveBeenCalled()
+        expect(@stateManager.states.states.noTransitions).toEqual @states.noTransitions
 
       it 'triggers remove:state and passes state name', =>
         spyOn @stateManager, 'trigger'
@@ -38,8 +41,11 @@ describe 'Backbone.StateManager', =>
         expect(@stateManager.trigger).toHaveBeenCalledWith 'add:state', 'noTransitions'
 
     describe 'removeState', =>
+      beforeEach => spyOn @stateManager.states, 'remove'
+
       it 'removes the state', =>
         @stateManager.removeState 'noTransitions'
+        expect(@stateManager.states.remove).toHaveBeenCalled()
         expect(@stateManager.states.noTransitions).toBeUndefined()
 
       it 'triggers remove:state and passes state name', =>
@@ -54,55 +60,31 @@ describe 'Backbone.StateManager', =>
 
     describe 'triggerState', =>
       beforeEach =>
-        spyOn(@stateManager, '_matchState').andReturn true
         spyOn @stateManager, 'enterState'
         spyOn @stateManager, 'exitState'
-
-      it 'checks that the state exists', =>
-        @stateManager.triggerState 'foo'
-        expect(@stateManager._matchState).toHaveBeenCalledWith 'foo'
-
-      it 'aborts if the state does not exist', =>
-        @stateManager._matchState.andReturn false
-        expect(@stateManager.triggerState 'foo').toEqual false
-        expect(@stateManager._matchState).toHaveBeenCalledWith 'foo'
-        expect(@stateManager.exitState).not.toHaveBeenCalled()
-        expect(@stateManager.enterState).not.toHaveBeenCalled()
 
       it 'calls exitState for the current state if it exists', =>
         @stateManager.currentState = 'bar'
         @stateManager.triggerState 'foo'
         expect(@stateManager.exitState).toHaveBeenCalledWith jasmine.any Object
 
-      it 'calls enterState for the new state if it exists', =>
+      it 'calls enterState for the new state', =>
         @stateManager.triggerState 'foo'
         expect(@stateManager.enterState).toHaveBeenCalledWith 'foo', jasmine.any Object
 
       describe 'the current state is the same as the new state', =>
-        it 'does nothing unless options.reEnter is set', =>
-          @stateManager._matchState.andReturn @states.noTransitions
-          @stateManager.currentState = 'noTransitions'
-          expect(@stateManager.triggerState 'noTransitions').toEqual false
-          expect(@stateManager._matchState).toHaveBeenCalledWith 'noTransitions'
+        beforeEach => @stateManager.currentState = 'foo'
+
+        it 'does nothing if options.reEnter is not set', =>
+          expect(@stateManager.triggerState 'foo').toEqual false
           expect(@stateManager.exitState).not.toHaveBeenCalled()
           expect(@stateManager.enterState).not.toHaveBeenCalled()
 
-          expect(@stateManager.triggerState 'noTransitions', reEnter : true).not.toEqual false
-          expect(@stateManager._matchState).toHaveBeenCalledWith 'noTransitions'
+        it 're-enters the state if optoins.reEnter is set', =>
+          expect(@stateManager.triggerState 'foo', reEnter : true).not.toEqual false
           expect(@stateManager.exitState).toHaveBeenCalledWith jasmine.any Object
-          expect(@stateManager.enterState).toHaveBeenCalledWith 'noTransitions', jasmine.any Object
+          expect(@stateManager.enterState).toHaveBeenCalledWith 'foo', jasmine.any Object
 
-    describe '_matchState', =>
-      it 'aborts if the passed in state is not a string', => expect(@stateManager._matchState {}).toEqual false
-
-      it 'converts passed in string to RegEx', =>
-        spyOn(window, 'RegExp').andCallThrough()
-        @stateManager._matchState 'foo:bar*splat'
-        expect(window.RegExp).toHaveBeenCalledWith '^foo([^/]+)(.*?)$'
-
-      it 'checks RegEx against all the states', =>
-        expect(@stateManager._matchState 'no*splat').toEqual 'noTransitions'
-        expect(@stateManager._matchState 'foo bar').toBeFalsy()
 
     describe 'exitState', =>
 
@@ -113,14 +95,14 @@ describe 'Backbone.StateManager', =>
 
       it 'triggers before:exit:state', =>
         spyOn @stateManager, 'trigger'
-        spyOn(@stateManager, '_matchState').andReturn @states.noTransitions
+        spyOn(@stateManager.states, 'find').andReturn @states.noTransitions
         @stateManager.currentState = 'noTransitions'
         @stateManager.exitState()
         expect(@stateManager.trigger)
           .toHaveBeenCalledWith 'before:exit:state', 'noTransitions', @states.noTransitions, jasmine.any Object
 
       it 'calls the exit method on the state', =>
-        spyOn(@stateManager, '_matchState').andReturn @states.noTransitions
+        spyOn(@stateManager.states, 'find').andReturn @states.noTransitions
         spyOn @states.noTransitions, 'exit'
         @stateManager.currentState = 'noTransitions'
         @stateManager.exitState()
@@ -128,7 +110,7 @@ describe 'Backbone.StateManager', =>
 
       it 'triggers exit:state', =>
         spyOn @stateManager, 'trigger'
-        spyOn(@stateManager, '_matchState').andReturn @states.noTransitions
+        spyOn(@stateManager.states, 'find').andReturn @states.noTransitions
         @stateManager.currentState = 'noTransitions'
         @stateManager.exitState()
         expect(@stateManager.trigger)

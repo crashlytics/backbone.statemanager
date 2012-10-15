@@ -11,51 +11,39 @@ http://github.com/crashlytics/backbone.statemanager
 (function() {
 
   Backbone.StateManager = (function(Backbone, _) {
-    var StateManager;
+    var StateManager, _deepBindAll;
     StateManager = function(states, options) {
-      var _this = this;
       this.options = options != null ? options : {};
-      this.states = {};
-      if (_.isObject(states)) {
-        return _.each(states, function(value, key) {
-          return _this.addState(key, value);
-        });
-      }
+      this.states = new StateManager.States(states);
+      return this;
     };
     StateManager.extend = Backbone.View.extend;
     _.extend(StateManager.prototype, Backbone.Events, {
-      addState: function(state, callbacks) {
-        this.states[state] = callbacks;
-        return this.trigger('add:state', state);
-      },
-      removeState: function(state) {
-        delete this.states[state];
-        return this.trigger('remove:state', state);
-      },
       getCurrentState: function() {
         return this.currentState;
       },
+      addState: function(name, callbacks) {
+        this.states.add(name, callbacks);
+        return this.trigger('add:state', name);
+      },
+      removeState: function(name) {
+        this.states.remove(name);
+        return this.trigger('remove:state', name);
+      },
       initialize: function(options) {
-        var initial,
-          _this = this;
+        var initial;
         if (options == null) {
           options = {};
         }
-        if (initial = _.chain(this.states).keys().find(function(state) {
-          return _this.states[state].initial;
-        }).value()) {
+        if (initial = this.states.findInitial()) {
           return this.triggerState(initial, options);
         }
       },
       triggerState: function(state, options) {
-        var newState;
         if (options == null) {
           options = {};
         }
-        if (!(newState = this._matchState(state))) {
-          return false;
-        }
-        if (!(newState === this.states[this.currentState] && !options.reEnter)) {
+        if (!(state === this.currentState && !options.reEnter)) {
           if (this.currentState) {
             this.exitState(options);
           }
@@ -70,25 +58,52 @@ http://github.com/crashlytics/backbone.statemanager
         if (options == null) {
           options = {};
         }
-        if (!((matchedState = this._matchState(this.currentState)) && _.isFunction(matchedState.exit))) {
+        if (!((matchedState = this.states.find(this.currentState)) && _.isFunction(matchedState.exit))) {
           return false;
         }
         this.trigger('before:exit:state', this.currentState, matchedState, options);
         matchedState.exit(options);
         return this.trigger('exit:state', this.currentState, matchedState, options);
+      }
+    });
+    StateManager.States = function(states) {
+      var _this = this;
+      this.states = {};
+      if (states && _.isObject(states)) {
+        _.each(states, function(value, key) {
+          return _this.add(key, value);
+        });
+      }
+      return this;
+    };
+    _.extend(StateManager.States.prototype, {
+      add: function(state, callbacks) {
+        callbacks.regExp = StateManager.States._regExpStateConversion(state);
+        return this.states[state] = callbacks;
       },
-      _matchState: function(state) {
-        var stateRegex;
-        if (!_.isString(state)) {
+      remove: function(state) {
+        return delete this[state];
+      },
+      find: function(name) {
+        if (!_.isString(name)) {
           return false;
         }
-        state = state.replace(/[-[\]{}()+?.,\\^$|#\s]/g, '\\$&').replace(/:\w+/g, '([^\/]+)').replace(/\*\w+/g, '(.*?)');
-        stateRegex = new RegExp("^" + state + "$");
+        return _.chain(this.states).find(function(state) {
+          var _ref;
+          return (_ref = state.regExp) != null ? _ref.test(name) : void 0;
+        }).value();
+      },
+      findInitial: function() {
+        var _this = this;
         return _.chain(this.states).keys().find(function(state) {
-          return stateRegex.test(state);
+          return _this.states[state].initial;
         }).value();
       }
     });
+    StateManager.States._regExpStateConversion = function(state) {
+      state = state.replace(/[-[\]{}()+?.,\\^$|#\s]/g, '\\$&').replace(/:\w+/g, '([^\/]+)').replace(/\*\w+/g, '(.*?)');
+      return new RegExp("^" + state + "$");
+    };
     StateManager.addStateManager = function(target, options) {
       var stateManager;
       if (options == null) {
@@ -97,7 +112,7 @@ http://github.com/crashlytics/backbone.statemanager
       if (!target) {
         new Error('Target must be defined');
       }
-      _.deepBindAll(target.states, target);
+      _deepBindAll(target.states, target);
       stateManager = new Backbone.StateManager(target.states, options);
       target.triggerState = function() {
         return stateManager.triggerState.apply(stateManager, arguments);
@@ -110,14 +125,14 @@ http://github.com/crashlytics/backbone.statemanager
       }
       return delete target.states;
     };
-    _.deepBindAll = function(obj) {
+    _deepBindAll = function(obj) {
       var target;
       target = _.last(arguments);
       _.each(obj, function(value, key) {
         if (_.isFunction(value)) {
           return obj[key] = _.bind(value, target);
         } else if (_.isObject(value)) {
-          return obj[key] = _.deepBindAll(value, target);
+          return obj[key] = _deepBindAll(value, target);
         }
       });
       return obj;
