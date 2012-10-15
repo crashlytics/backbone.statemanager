@@ -14,3 +14,15 @@ window.spec =
       nonMethodEnter :
         enter : {}
         exit : ->
+      exitTransition :
+        enter : ->
+        exit : ->
+        transitions :
+          'onBeforeExitTo:enterTransition' : ->
+          'onExitTo:enterTransition' : ->
+      enterTransition :
+        enter : ->
+        exit : ->
+        transitions :
+          'onBeforeEnterFrom:exitTransition' : ->
+          'onEnterFrom:enterTransition' : ->

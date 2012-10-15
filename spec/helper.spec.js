@@ -20,6 +20,22 @@
         nonMethodEnter: {
           enter: {},
           exit: function() {}
+        },
+        exitTransition: {
+          enter: function() {},
+          exit: function() {},
+          transitions: {
+            'onBeforeExitTo:enterTransition': function() {},
+            'onExitTo:enterTransition': function() {}
+          }
+        },
+        enterTransition: {
+          enter: function() {},
+          exit: function() {},
+          transitions: {
+            'onBeforeEnterFrom:exitTransition': function() {},
+            'onEnterFrom:enterTransition': function() {}
+          }
         }
       }
     }
