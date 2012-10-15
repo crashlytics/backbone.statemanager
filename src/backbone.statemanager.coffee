@@ -80,8 +80,8 @@ Backbone.StateManager = ((Backbone, _) ->
   # Helper to convert state names into RegExp for matching
   StateManager.States._regExpStateConversion = (name) ->
     name = name.replace(/[-[\]{}()+?.,\\^$|#\s]/g, '\\$&')
-                   .replace(/:\w+/g, '([^\/]+)')
-                   .replace(/\*\w+/g, '(.*?)')
+                .replace(/:\w+/g, '([^\/]+)')
+                .replace(/\*\w+/g, '(.*?)')
     new RegExp "^#{ name }$"
 
   # Function we can use to provide StateManager capabilities to views on construct
