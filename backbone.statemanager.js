@@ -52,7 +52,20 @@ http://github.com/crashlytics/backbone.statemanager
           return false;
         }
       },
-      enterState: function(state, options) {},
+      enterState: function(state, options) {
+        var matchedState;
+        if (options == null) {
+          options = {};
+        }
+        if (!((matchedState = this.states.find(this.currentState)) && _.isFunction(matchedState.enter))) {
+          return false;
+        }
+        this.trigger('before:enter:state', state, matchedState, options);
+        matchedState.enter(options);
+        this.trigger('enter:state', this.currentState, matchedState, options);
+        this.currentState = state;
+        return this;
+      },
       exitState: function(options) {
         var matchedState;
         if (options == null) {
@@ -63,7 +76,9 @@ http://github.com/crashlytics/backbone.statemanager
         }
         this.trigger('before:exit:state', this.currentState, matchedState, options);
         matchedState.exit(options);
-        return this.trigger('exit:state', this.currentState, matchedState, options);
+        this.trigger('exit:state', this.currentState, matchedState, options);
+        delete this.currentState;
+        return this;
       }
     });
     StateManager.States = function(states) {

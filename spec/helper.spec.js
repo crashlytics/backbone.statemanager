@@ -16,6 +16,10 @@
         nonMethodExit: {
           enter: function() {},
           exit: {}
+        },
+        nonMethodEnter: {
+          enter: {},
+          exit: function() {}
         }
       }
     }
