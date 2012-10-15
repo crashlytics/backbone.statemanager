@@ -67,7 +67,7 @@
           return expect(_this.stateManager.getCurrentState()).toEqual(_this.states.noTransitions);
         });
       });
-      return describe('triggerState', function() {
+      describe('triggerState', function() {
         beforeEach(function() {
           spyOn(_this.stateManager, '_matchState').andReturn(true);
           spyOn(_this.stateManager, 'enterState');
@@ -108,6 +108,20 @@
             expect(_this.stateManager.exitState).toHaveBeenCalledWith('noTransitions', jasmine.any(Object));
             return expect(_this.stateManager.enterState).toHaveBeenCalledWith('noTransitions', jasmine.any(Object));
           });
+        });
+      });
+      return describe('_matchState', function() {
+        it('aborts if the passed in state is not a string', function() {
+          return expect(_this.stateManager._matchState({})).toEqual(false);
+        });
+        it('converts passed in string to RegEx', function() {
+          spyOn(window, 'RegExp').andCallThrough();
+          _this.stateManager._matchState('foo:bar*splat');
+          return expect(window.RegExp).toHaveBeenCalledWith('^foo([^/]+)(.*?)$');
+        });
+        return it('checks RegEx against all the states', function() {
+          expect(_this.stateManager._matchState('no*splat')).toEqual('noTransitions');
+          return expect(_this.stateManager._matchState('foo bar')).toBeFalsy();
         });
       });
     });

@@ -101,8 +101,17 @@ describe 'Backbone.StateManager', =>
           expect(@stateManager.exitState).toHaveBeenCalledWith 'noTransitions', jasmine.any Object
           expect(@stateManager.enterState).toHaveBeenCalledWith 'noTransitions', jasmine.any Object
 
+    describe '_matchState', =>
+      it 'aborts if the passed in state is not a string', => expect(@stateManager._matchState {}).toEqual false
 
+      it 'converts passed in string to RegEx', =>
+        spyOn(window, 'RegExp').andCallThrough()
+        @stateManager._matchState 'foo:bar*splat'
+        expect(window.RegExp).toHaveBeenCalledWith '^foo([^/]+)(.*?)$'
 
+      it 'checks RegEx against all the states', =>
+        expect(@stateManager._matchState 'no*splat').toEqual 'noTransitions'
+        expect(@stateManager._matchState 'foo bar').toBeFalsy()
 
   describe 'addStateManager', =>
 
