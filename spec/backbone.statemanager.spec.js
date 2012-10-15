@@ -26,41 +26,31 @@
       });
     });
     describe('prototype', function() {
+      beforeEach(function() {
+        return _this.stateManager = new Backbone.StateManager(_this.states);
+      });
+      afterEach(function() {
+        return delete _this.stateManager;
+      });
       describe('initialize', function() {
         return it('calls triggerState on the first state found that has initial : true set on it', function() {
-          var stateManager;
           spyOn(Backbone.StateManager.prototype, 'triggerState');
-          stateManager = new Backbone.StateManager(_this.states);
-          stateManager.initialize();
-          return expect(stateManager.triggerState).toHaveBeenCalledWith('withInitial', jasmine.any(Object));
+          _this.stateManager.initialize();
+          return expect(_this.stateManager.triggerState).toHaveBeenCalledWith('withInitial', jasmine.any(Object));
         });
       });
       describe('addState', function() {
-        beforeEach(function() {
-          _this.stateManager = new Backbone.StateManager;
-          return _this.stateManager.states = _this.states;
-        });
-        afterEach(function() {
-          return delete _this.stateManager;
-        });
         it('sets the state passed to states with the states callback', function() {
           _this.stateManager.addState('noTransitions', _this.states.noTransitions);
-          return expect(stateManager.states.noTransitions).toEqual(_this.states.noTransitions);
+          return expect(_this.stateManager.states.noTransitions).toEqual(_this.states.noTransitions);
         });
         return it('triggers remove:state and passes state name', function() {
           spyOn(_this.stateManager, 'trigger');
           _this.stateManager.addState('noTransitions');
-          return expect(stateManager.trigger).toHaveBeenCalledWith('add:state', 'noTransitions');
+          return expect(_this.stateManager.trigger).toHaveBeenCalledWith('add:state', 'noTransitions');
         });
       });
       describe('removeState', function() {
-        beforeEach(function() {
-          _this.stateManager = new Backbone.StateManager;
-          return _this.stateManager.states = _this.states;
-        });
-        afterEach(function() {
-          return delete _this.stateManager;
-        });
         it('removes the state', function() {
           _this.stateManager.removeState('noTransitions');
           return expect(_this.stateManager.states.noTransitions).toBeUndefined();
@@ -68,16 +58,56 @@
         return it('triggers remove:state and passes state name', function() {
           spyOn(_this.stateManager, 'trigger');
           _this.stateManager.removeState('noTransitions');
-          return expect(stateManager.trigger).toHaveBeenCalledWith('remove:state', 'noTransitions');
+          return expect(_this.stateManager.trigger).toHaveBeenCalledWith('remove:state', 'noTransitions');
         });
       });
-      return describe('getCurrentState', function() {
+      describe('getCurrentState', function() {
         return it('returns the current state', function() {
-          var currentState, stateManager;
-          stateManager = new Backbone.StateManager;
-          stateManager.currentState = _this.states.noTransitions;
-          currentState = stateManager.getCurrentState();
-          return expect(currentState).toEqual(_this.states.noTransitions);
+          _this.stateManager.currentState = _this.states.noTransitions;
+          return expect(_this.stateManager.getCurrentState()).toEqual(_this.states.noTransitions);
+        });
+      });
+      return describe('triggerState', function() {
+        beforeEach(function() {
+          spyOn(_this.stateManager, '_matchState').andReturn(true);
+          spyOn(_this.stateManager, 'enterState');
+          return spyOn(_this.stateManager, 'exitState');
+        });
+        it('checks that the state exists', function() {
+          _this.stateManager.triggerState('foo');
+          return expect(_this.stateManager._matchState).toHaveBeenCalledWith('foo');
+        });
+        it('aborts if the state does not exist', function() {
+          _this.stateManager._matchState.andReturn(false);
+          expect(_this.stateManager.triggerState('foo')).toEqual(false);
+          expect(_this.stateManager._matchState).toHaveBeenCalledWith('foo');
+          expect(_this.stateManager.exitState).not.toHaveBeenCalled();
+          return expect(_this.stateManager.enterState).not.toHaveBeenCalled();
+        });
+        it('calls exitState for the current state if it exists', function() {
+          _this.stateManager.currentState = 'bar';
+          _this.stateManager.triggerState('foo');
+          return expect(_this.stateManager.exitState).toHaveBeenCalledWith('bar', jasmine.any(Object));
+        });
+        it('calls enterState for the new state if it exists', function() {
+          _this.stateManager.triggerState('foo');
+          return expect(_this.stateManager.enterState).toHaveBeenCalledWith('foo', jasmine.any(Object));
+        });
+        return describe('the current state is the same as the new state', function() {
+          return it('does nothing unless options.reEnter is set', function() {
+            _this.stateManager._matchState.andReturn(_this.states.noTransitions);
+            _this.stateManager.currentState = 'noTransitions';
+            expect(_this.stateManager.triggerState('noTransitions')).toEqual(false);
+            expect(_this.stateManager._matchState).toHaveBeenCalledWith('noTransitions');
+            expect(_this.stateManager.exitState).not.toHaveBeenCalled();
+            expect(_this.stateManager.enterState).not.toHaveBeenCalled();
+            expect(_this.stateManager.triggerState('noTransitions', {
+              reEnter: true
+            })).not.toEqual(false);
+            expect(_this.stateManager._matchState).toHaveBeenCalledWith('noTransitions');
+            expect(_this.stateManager.exitState).toHaveBeenCalledWith('noTransitions', jasmine.any(Object));
+            return expect(_this.stateManager.enterState).toHaveBeenCalledWith('noTransitions', jasmine.any(Object));
+          });
         });
       });
     });
