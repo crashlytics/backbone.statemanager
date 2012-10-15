@@ -35,25 +35,16 @@ Backbone.StateManager = ((Backbone, _) ->
         @triggerState initial, options
 
     triggerState : (state, options = {}) ->
-      # return false unless matchedState = @_matchState state
-      # currentState = @currentState
+      return false unless newState = @_matchState state
 
-    #   # Load new state if:
-    #   #   there is no current state
-    #   #   the strings for the states don't match exactly and they have too
-    #   #   they state objs don't match
-    #   if not currentState or (currentState isnt state and options.exactMatch) or @states[currentState] isnt matchedState
-    #     @exitState obj, currentState, matchedState, options
-    #     @enterState obj, matchedState, currentState, options
-    #     @
-    #   else if @options.reEnter
-    #     @exitState obj, currentState, matchedState, options
-    #     @enterState obj, matchedState, currentState, options
-    #     @
-    #   else
-    #     false
+      unless newState is @states[@currentState] and not options.reEnter
+        @exitState @currentState, options if @currentState
+        @enterState state, options
+      else
+        false
 
-    # enterState : (obj, state, options) ->
+
+    enterState : (obj, state, options) ->
     #   return false unless @states?[state] and _.isFunction @states[state].enter
 
     #   obj.onBeforeStateEnter? state, options
@@ -64,7 +55,7 @@ Backbone.StateManager = ((Backbone, _) ->
     #   obj.trigger 'state:enter', state, options
     #   obj
 
-    # exitState : (obj, state, options) ->
+    exitState : (obj, state, options) ->
     #   return false unless @states?[state] and _.isFunction @states[state].exit
 
     #   obj.onBeforeStateExit? state, options
@@ -76,7 +67,7 @@ Backbone.StateManager = ((Backbone, _) ->
     #   obj.trigger 'state:exit', state, options
     #   obj
 
-    # _matchState : (state) ->
+    _matchState : (state) ->
     #   # We want to allow states to be defined the same way as routes with splats and :params
     #   return false unless @states
     #   stateRegex = Backbone.Router.prototype state

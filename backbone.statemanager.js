@@ -48,10 +48,25 @@ http://github.com/crashlytics/backbone.statemanager
         }
       },
       triggerState: function(state, options) {
+        var newState;
         if (options == null) {
           options = {};
         }
-      }
+        if (!(newState = this._matchState(state))) {
+          return false;
+        }
+        if (!(newState === this.states[this.currentState] && !options.reEnter)) {
+          if (this.currentState) {
+            this.exitState(this.currentState, options);
+          }
+          return this.enterState(state, options);
+        } else {
+          return false;
+        }
+      },
+      enterState: function(obj, state, options) {},
+      exitState: function(obj, state, options) {},
+      _matchState: function(state) {}
     });
     StateManager.addStateManager = function(target, options) {
       var stateManager;
