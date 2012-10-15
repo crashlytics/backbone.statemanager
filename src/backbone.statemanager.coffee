@@ -19,8 +19,14 @@ Backbone.StateManager = ((Backbone, _) ->
 
   # Extend the prototype to make functionality available for instantiations
   _.extend StateManager.prototype, Backbone.Events,
-    addState : (state, callbacks) -> @states[state] = callbacks
-    removeState : (state) -> delete @states[state]
+    addState : (state, callbacks) ->
+      @states[state] = callbacks
+      @trigger 'add:state', state
+
+    removeState : (state) ->
+      delete @states[state]
+      @trigger 'remove:state', state
+
     getCurrentState : -> @currentState
 
     initialize : (options = {}) ->

@@ -25,10 +25,12 @@ http://github.com/crashlytics/backbone.statemanager
     StateManager.extend = Backbone.View.extend;
     _.extend(StateManager.prototype, Backbone.Events, {
       addState: function(state, callbacks) {
-        return this.states[state] = callbacks;
+        this.states[state] = callbacks;
+        return this.trigger('add:state', state);
       },
       removeState: function(state) {
-        return delete this.states[state];
+        delete this.states[state];
+        return this.trigger('remove:state', state);
       },
       getCurrentState: function() {
         return this.currentState;
