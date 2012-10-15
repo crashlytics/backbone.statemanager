@@ -11,7 +11,7 @@ http://github.com/crashlytics/backbone.statemanager
 (function() {
 
   Backbone.StateManager = (function(Backbone, _) {
-    var StateManager, _recursiveBindAll;
+    var StateManager;
     StateManager = function(states, options) {
       var _this = this;
       this.options = options != null ? options : {};
@@ -59,7 +59,7 @@ http://github.com/crashlytics/backbone.statemanager
       if (!target) {
         new Error('Target must be defined');
       }
-      _recursiveBindAll(target, target.states);
+      _.deepBindAll(target.states, target);
       stateManager = new Backbone.StateManager(target.states, options);
       target.triggerState = function() {
         return stateManager.triggerState.apply(stateManager, arguments);
@@ -72,14 +72,17 @@ http://github.com/crashlytics/backbone.statemanager
       }
       return delete target.states;
     };
-    _recursiveBindAll = function(target, object) {
-      return _.each(object, function(property) {
-        if (_.isFunction(property)) {
-          return _.bind(property, target);
-        } else if (_.isObject(property)) {
-          return _recursiveBindAll(target, property);
+    _.deepBindAll = function(obj) {
+      var target;
+      target = _.last(arguments);
+      _.each(obj, function(value, key) {
+        if (_.isFunction(value)) {
+          return obj[key] = _.bind(value, target);
+        } else if (_.isObject(value)) {
+          return obj[key] = _.deepBindAll(value, target);
         }
       });
+      return obj;
     };
     return StateManager;
   })(Backbone, _);

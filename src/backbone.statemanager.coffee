@@ -79,7 +79,7 @@ Backbone.StateManager = ((Backbone, _) ->
   # Function we can use to provide StateManager capabilities to views on construct
   StateManager.addStateManager = (target, options = {}) ->
     new Error 'Target must be defined' unless target
-    _recursiveBindAll target, target.states
+    _.deepBindAll target.states, target
     stateManager = new Backbone.StateManager target.states, options
     target.triggerState = -> stateManager.triggerState.apply stateManager, arguments
     target.getCurrentState = -> stateManager.getCurrentState()
@@ -91,12 +91,14 @@ Backbone.StateManager = ((Backbone, _) ->
     delete target.states
 
   # Recursively finds methods in an object and binds them to target
-  _recursiveBindAll = (target, object) ->
-    _.each object, (property) ->
-      if _.isFunction property
-        _.bind property, target
-      else if _.isObject property
-        _recursiveBindAll target, property
+  _.deepBindAll = (obj) ->
+    target = _.last arguments
+    _.each obj, (value, key) ->
+      if _.isFunction value
+        obj[key] = _.bind value, target
+      else if _.isObject value
+        obj[key] = _.deepBindAll(value, target)
+    obj
 
   StateManager
 )(Backbone, _)
