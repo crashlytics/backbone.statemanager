@@ -43,29 +43,21 @@ Backbone.StateManager = ((Backbone, _) ->
       else
         false
 
-    enterState : (state, options) ->
-    #   return false unless @states?[state] and _.isFunction @states[state].enter
-
-    #   obj.onBeforeStateEnter? state, options
-    #   obj.trigger 'before:state:enter', state, options
-    #   @states[state].enter.apply obj, options
-    #   @currentState = state
-    #   obj.onStateEnter? state, options
-    #   obj.trigger 'state:enter', state, options
-    #   obj
+    enterState : (state, options = {}) ->
+      return false unless (matchedState = @_matchState @currentState) and _.isFunction matchedState.enter
+      @trigger 'before:enter:state', state, matchedState, options
+      matchedState.enter options
+      @trigger 'enter:state', @currentState, matchedState, options
+      @currentState = state
+      @
 
     exitState : (options = {}) ->
       return false unless (matchedState = @_matchState @currentState) and _.isFunction matchedState.exit
       @trigger 'before:exit:state', @currentState, matchedState, options
       matchedState.exit options
       @trigger 'exit:state', @currentState, matchedState, options
-
-    #   @states[state].exit.apply obj, options
-    #   @previousState = state
-    #   delete @currentState
-    #   obj.onStateExit? state, options
-    #   obj.trigger 'state:exit', state, options
-    #   obj
+      delete @currentState
+      @
 
     _matchState : (state) ->
       return false unless _.isString state
