@@ -66,7 +66,17 @@ http://github.com/crashlytics/backbone.statemanager
       },
       enterState: function(obj, state, options) {},
       exitState: function(obj, state, options) {},
-      _matchState: function(state) {}
+      _matchState: function(state) {
+        var stateRegex;
+        if (!_.isString(state)) {
+          return false;
+        }
+        state = state.replace(/[-[\]{}()+?.,\\^$|#\s]/g, '\\$&').replace(/:\w+/g, '([^\/]+)').replace(/\*\w+/g, '(.*?)');
+        stateRegex = new RegExp("^" + state + "$");
+        return _.chain(this.states).keys().find(function(state) {
+          return stateRegex.test(state);
+        }).value();
+      }
     });
     StateManager.addStateManager = function(target, options) {
       var stateManager;

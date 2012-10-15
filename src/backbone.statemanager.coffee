@@ -43,7 +43,6 @@ Backbone.StateManager = ((Backbone, _) ->
       else
         false
 
-
     enterState : (obj, state, options) ->
     #   return false unless @states?[state] and _.isFunction @states[state].enter
 
@@ -68,10 +67,15 @@ Backbone.StateManager = ((Backbone, _) ->
     #   obj
 
     _matchState : (state) ->
-    #   # We want to allow states to be defined the same way as routes with splats and :params
-    #   return false unless @states
-    #   stateRegex = Backbone.Router.prototype state
-    #   _.chain(@states).keys().find((state) -> stateRegex.test state).value()
+      return false unless _.isString state
+
+      # We want to allow states to be defined the same way as routes with splats and :params
+      state = state.replace(/[-[\]{}()+?.,\\^$|#\s]/g, '\\$&')
+                   .replace(/:\w+/g, '([^\/]+)')
+                   .replace(/\*\w+/g, '(.*?)')
+
+      stateRegex = new RegExp "^#{ state }$"
+      _.chain(@states).keys().find((state) -> stateRegex.test state).value()
 
   # Function we can use to provide StateManager capabilities to views on construct
   StateManager.addStateManager = (target, options = {}) ->
