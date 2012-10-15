@@ -72,7 +72,7 @@ describe 'Backbone.StateManager', =>
       it 'calls exitState for the current state if it exists', =>
         @stateManager.currentState = 'bar'
         @stateManager.triggerState 'foo'
-        expect(@stateManager.exitState).toHaveBeenCalledWith 'bar', jasmine.any Object
+        expect(@stateManager.exitState).toHaveBeenCalledWith jasmine.any Object
 
       it 'calls enterState for the new state if it exists', =>
         @stateManager.triggerState 'foo'
@@ -89,7 +89,7 @@ describe 'Backbone.StateManager', =>
 
           expect(@stateManager.triggerState 'noTransitions', reEnter : true).not.toEqual false
           expect(@stateManager._matchState).toHaveBeenCalledWith 'noTransitions'
-          expect(@stateManager.exitState).toHaveBeenCalledWith 'noTransitions', jasmine.any Object
+          expect(@stateManager.exitState).toHaveBeenCalledWith jasmine.any Object
           expect(@stateManager.enterState).toHaveBeenCalledWith 'noTransitions', jasmine.any Object
 
     describe '_matchState', =>
@@ -103,6 +103,39 @@ describe 'Backbone.StateManager', =>
       it 'checks RegEx against all the states', =>
         expect(@stateManager._matchState 'no*splat').toEqual 'noTransitions'
         expect(@stateManager._matchState 'foo bar').toBeFalsy()
+
+    describe 'exitState', =>
+
+      it 'returns false if currentState does not exist', => expect(@stateManager.exitState 'foo').toBeFalsy()
+
+      it 'returns false if the states exit property is not a method', =>
+        expect(@stateManager.exitState 'nonMethodExit').toBeFalsy()
+
+      it 'triggers before:exit:state', =>
+        spyOn @stateManager, 'trigger'
+        spyOn(@stateManager, '_matchState').andReturn @states.noTransitions
+        @stateManager.currentState = 'noTransitions'
+        @stateManager.exitState()
+        expect(@stateManager.trigger)
+          .toHaveBeenCalledWith 'before:exit:state', 'noTransitions', @states.noTransitions, jasmine.any Object
+
+      it 'calls the exit method on the state', =>
+        spyOn(@stateManager, '_matchState').andReturn @states.noTransitions
+        spyOn @states.noTransitions, 'exit'
+        @stateManager.currentState = 'noTransitions'
+        @stateManager.exitState()
+        expect(@states.noTransitions.exit).toHaveBeenCalledWith jasmine.any Object
+
+      it 'triggers exit:state', =>
+        spyOn @stateManager, 'trigger'
+        spyOn(@stateManager, '_matchState').andReturn @states.noTransitions
+        @stateManager.currentState = 'noTransitions'
+        @stateManager.exitState()
+        expect(@stateManager.trigger)
+          .toHaveBeenCalledWith 'exit:state', 'noTransitions', @states.noTransitions, jasmine.any Object
+
+      describe 'transitions', =>
+
 
   describe 'addStateManager', =>
     it 'creates a new StateManager', =>

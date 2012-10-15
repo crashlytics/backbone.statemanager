@@ -87,7 +87,7 @@
         it('calls exitState for the current state if it exists', function() {
           _this.stateManager.currentState = 'bar';
           _this.stateManager.triggerState('foo');
-          return expect(_this.stateManager.exitState).toHaveBeenCalledWith('bar', jasmine.any(Object));
+          return expect(_this.stateManager.exitState).toHaveBeenCalledWith(jasmine.any(Object));
         });
         it('calls enterState for the new state if it exists', function() {
           _this.stateManager.triggerState('foo');
@@ -105,12 +105,12 @@
               reEnter: true
             })).not.toEqual(false);
             expect(_this.stateManager._matchState).toHaveBeenCalledWith('noTransitions');
-            expect(_this.stateManager.exitState).toHaveBeenCalledWith('noTransitions', jasmine.any(Object));
+            expect(_this.stateManager.exitState).toHaveBeenCalledWith(jasmine.any(Object));
             return expect(_this.stateManager.enterState).toHaveBeenCalledWith('noTransitions', jasmine.any(Object));
           });
         });
       });
-      return describe('_matchState', function() {
+      describe('_matchState', function() {
         it('aborts if the passed in state is not a string', function() {
           return expect(_this.stateManager._matchState({})).toEqual(false);
         });
@@ -123,6 +123,36 @@
           expect(_this.stateManager._matchState('no*splat')).toEqual('noTransitions');
           return expect(_this.stateManager._matchState('foo bar')).toBeFalsy();
         });
+      });
+      return describe('exitState', function() {
+        it('returns false if currentState does not exist', function() {
+          return expect(_this.stateManager.exitState('foo')).toBeFalsy();
+        });
+        it('returns false if the states exit property is not a method', function() {
+          return expect(_this.stateManager.exitState('nonMethodExit')).toBeFalsy();
+        });
+        it('triggers before:exit:state', function() {
+          spyOn(_this.stateManager, 'trigger');
+          spyOn(_this.stateManager, '_matchState').andReturn(_this.states.noTransitions);
+          _this.stateManager.currentState = 'noTransitions';
+          _this.stateManager.exitState();
+          return expect(_this.stateManager.trigger).toHaveBeenCalledWith('before:exit:state', 'noTransitions', _this.states.noTransitions, jasmine.any(Object));
+        });
+        it('calls the exit method on the state', function() {
+          spyOn(_this.stateManager, '_matchState').andReturn(_this.states.noTransitions);
+          spyOn(_this.states.noTransitions, 'exit');
+          _this.stateManager.currentState = 'noTransitions';
+          _this.stateManager.exitState();
+          return expect(_this.states.noTransitions.exit).toHaveBeenCalledWith(jasmine.any(Object));
+        });
+        it('triggers exit:state', function() {
+          spyOn(_this.stateManager, 'trigger');
+          spyOn(_this.stateManager, '_matchState').andReturn(_this.states.noTransitions);
+          _this.stateManager.currentState = 'noTransitions';
+          _this.stateManager.exitState();
+          return expect(_this.stateManager.trigger).toHaveBeenCalledWith('exit:state', 'noTransitions', _this.states.noTransitions, jasmine.any(Object));
+        });
+        return describe('transitions', function() {});
       });
     });
     return describe('addStateManager', function() {
