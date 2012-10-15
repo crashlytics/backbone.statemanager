@@ -34,6 +34,7 @@ Backbone.StateManager = ((Backbone, _) ->
 
     triggerState : (state, options = {}) ->
       unless state is @currentState and not options.reEnter
+        _.extend options, toState : state, fromState : @currentState
         @exitState options if @currentState
         @enterState state, options
       else
@@ -48,10 +49,21 @@ Backbone.StateManager = ((Backbone, _) ->
       @
 
     exitState : (options = {}) ->
-      return false unless (matchedState = @states.find @currentState) and _.isFunction matchedState.exit
-      @trigger 'before:exit:state', @currentState, matchedState, options
-      matchedState.exit options
-      @trigger 'exit:state', @currentState, matchedState, options
+      return false unless (matchedCurrentState = @states.find @currentState) and _.isFunction matchedCurrentState.exit
+
+      @trigger 'before:exit:state', @currentState, matchedCurrentState, options
+
+      # Find the the state we will be transitioning to and if it has a onBeforeExitTo method, call it
+      if (matchedToState = @states.find options.toState) and matchedToState.findTransition 'onBeforeExitTo', options.toState
+        matchedToState.transitions["onBeforeExitTo:#{ options.toState }"] options
+
+      matchedCurrentState.exit options
+
+      # Find the the state we will be transitioning to and if it has a exitTo method, call it
+      if (matchedToState = @states.find options.toState) and matchedToState.findTransition 'onExitTo', options.toState
+        matchedToState.transitions["onExitTo:#{ options.toState }"] options
+
+      @trigger 'exit:state', @currentState, matchedCurrentState, options
       delete @currentState
       @
 
@@ -73,6 +85,8 @@ Backbone.StateManager = ((Backbone, _) ->
       _.chain(@states).find((state) -> state.regExp?.test name).value()
 
     findInitial : -> _.chain(@states).keys().find((state) => @states[state].initial).value()
+
+    findTransition : (type, name) ->
 
   # Helper to convert state names into RegExp for matching
   StateManager.States._regExpStateConversion = (state) ->

@@ -44,6 +44,10 @@ http://github.com/crashlytics/backbone.statemanager
           options = {};
         }
         if (!(state === this.currentState && !options.reEnter)) {
+          _.extend(options, {
+            toState: state,
+            fromState: this.currentState
+          });
           if (this.currentState) {
             this.exitState(options);
           }
@@ -67,16 +71,22 @@ http://github.com/crashlytics/backbone.statemanager
         return this;
       },
       exitState: function(options) {
-        var matchedState;
+        var matchedCurrentState, matchedToState;
         if (options == null) {
           options = {};
         }
-        if (!((matchedState = this.states.find(this.currentState)) && _.isFunction(matchedState.exit))) {
+        if (!((matchedCurrentState = this.states.find(this.currentState)) && _.isFunction(matchedCurrentState.exit))) {
           return false;
         }
-        this.trigger('before:exit:state', this.currentState, matchedState, options);
-        matchedState.exit(options);
-        this.trigger('exit:state', this.currentState, matchedState, options);
+        this.trigger('before:exit:state', this.currentState, matchedCurrentState, options);
+        if ((matchedToState = this.states.find(options.toState)) && matchedToState.findTransition('onBeforeExitTo', options.toState)) {
+          matchedToState.transitions["onBeforeExitTo:" + options.toState](options);
+        }
+        matchedCurrentState.exit(options);
+        if ((matchedToState = this.states.find(options.toState)) && matchedToState.findTransition('onExitTo', options.toState)) {
+          matchedToState.transitions["onExitTo:" + options.toState](options);
+        }
+        this.trigger('exit:state', this.currentState, matchedCurrentState, options);
         delete this.currentState;
         return this;
       }
@@ -113,7 +123,8 @@ http://github.com/crashlytics/backbone.statemanager
         return _.chain(this.states).keys().find(function(state) {
           return _this.states[state].initial;
         }).value();
-      }
+      },
+      findTransition: function(type, name) {}
     });
     StateManager.States._regExpStateConversion = function(state) {
       state = state.replace(/[-[\]{}()+?.,\\^$|#\s]/g, '\\$&').replace(/:\w+/g, '([^\/]+)').replace(/\*\w+/g, '(.*?)');
