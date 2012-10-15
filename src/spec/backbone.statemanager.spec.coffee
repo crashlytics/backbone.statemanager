@@ -13,28 +13,44 @@ describe 'Backbone.StateManager', ->
       stateManager = new Backbone.StateManager foo : ->
       expect(stateManager.addState).toHaveBeenCalledWith 'foo', jasmine.any(Function)
 
-  describe 'addState', ->
+  describe 'prototype', ->
 
-    it 'sets the state passed to states with the states callback', ->
-      stateManager = new Backbone.StateManager
-      stateManager.addState 'foo', bar = ->
-      expect(stateManager.states.foo).toEqual bar
+    describe 'initialize', ->
 
-  describe 'removeState', ->
+      it 'calls triggerState on the first state found that has initial : true set on it', ->
+        states =
+          foo :
+            initial : true
+          bar : {}
 
-    it 'removes the state', ->
-      stateManager = new Backbone.StateManager
-      stateManager.states = foo : ->
-      stateManager.removeState 'foo'
-      expect(stateManager.states.foo).toBeUndefined()
+        spyOn Backbone.StateManager.prototype, 'triggerState'
+        stateManager = new Backbone.StateManager states
 
-   describe 'getCurrentState', ->
+        stateManager.initialize()
+        expect(stateManager.triggerState).toHaveBeenCalledWith 'foo', jasmine.any Object
 
-    it 'returns the current state', ->
-      stateManager = new Backbone.StateManager
-      stateManager.currentState = foo = {}
-      currentState = stateManager.getCurrentState()
-      expect(currentState).toEqual foo
+    describe 'addState', ->
+
+      it 'sets the state passed to states with the states callback', ->
+        stateManager = new Backbone.StateManager
+        stateManager.addState 'foo', bar = ->
+        expect(stateManager.states.foo).toEqual bar
+
+    describe 'removeState', ->
+
+      it 'removes the state', ->
+        stateManager = new Backbone.StateManager
+        stateManager.states = foo : ->
+        stateManager.removeState 'foo'
+        expect(stateManager.states.foo).toBeUndefined()
+
+     describe 'getCurrentState', ->
+
+      it 'returns the current state', ->
+        stateManager = new Backbone.StateManager
+        stateManager.currentState = foo = {}
+        currentState = stateManager.getCurrentState()
+        expect(currentState).toEqual foo
 
   describe 'addStateManager', ->
 
@@ -89,17 +105,4 @@ describe 'Backbone.StateManager', ->
       Backbone.StateManager.addStateManager {}, { initialize : undefined }
       expect(Backbone.StateManager.prototype.initialize).toHaveBeenCalled()
 
-  describe 'prototype', ->
-    describe 'initialize', ->
 
-      it 'calls triggerState on the first state found that has initial : true set on it', ->
-        states =
-          foo :
-            initial : true
-          bar : {}
-
-        spyOn Backbone.StateManager.prototype, 'triggerState'
-        stateManager = new Backbone.StateManager states
-
-        stateManager.initialize()
-        expect(stateManager.triggerState).toHaveBeenCalledWith 'foo', jasmine.any Object

@@ -20,35 +20,52 @@
         return expect(stateManager.addState).toHaveBeenCalledWith('foo', jasmine.any(Function));
       });
     });
-    describe('addState', function() {
-      return it('sets the state passed to states with the states callback', function() {
-        var bar, stateManager;
-        stateManager = new Backbone.StateManager;
-        stateManager.addState('foo', bar = function() {});
-        return expect(stateManager.states.foo).toEqual(bar);
+    describe('prototype', function() {
+      describe('initialize', function() {
+        return it('calls triggerState on the first state found that has initial : true set on it', function() {
+          var stateManager, states;
+          states = {
+            foo: {
+              initial: true
+            },
+            bar: {}
+          };
+          spyOn(Backbone.StateManager.prototype, 'triggerState');
+          stateManager = new Backbone.StateManager(states);
+          stateManager.initialize();
+          return expect(stateManager.triggerState).toHaveBeenCalledWith('foo', jasmine.any(Object));
+        });
+      });
+      describe('addState', function() {
+        return it('sets the state passed to states with the states callback', function() {
+          var bar, stateManager;
+          stateManager = new Backbone.StateManager;
+          stateManager.addState('foo', bar = function() {});
+          return expect(stateManager.states.foo).toEqual(bar);
+        });
+      });
+      describe('removeState', function() {
+        return it('removes the state', function() {
+          var stateManager;
+          stateManager = new Backbone.StateManager;
+          stateManager.states = {
+            foo: function() {}
+          };
+          stateManager.removeState('foo');
+          return expect(stateManager.states.foo).toBeUndefined();
+        });
+      });
+      return describe('getCurrentState', function() {
+        return it('returns the current state', function() {
+          var currentState, foo, stateManager;
+          stateManager = new Backbone.StateManager;
+          stateManager.currentState = foo = {};
+          currentState = stateManager.getCurrentState();
+          return expect(currentState).toEqual(foo);
+        });
       });
     });
-    describe('removeState', function() {
-      return it('removes the state', function() {
-        var stateManager;
-        stateManager = new Backbone.StateManager;
-        stateManager.states = {
-          foo: function() {}
-        };
-        stateManager.removeState('foo');
-        return expect(stateManager.states.foo).toBeUndefined();
-      });
-    });
-    describe('getCurrentState', function() {
-      return it('returns the current state', function() {
-        var currentState, foo, stateManager;
-        stateManager = new Backbone.StateManager;
-        stateManager.currentState = foo = {};
-        currentState = stateManager.getCurrentState();
-        return expect(currentState).toEqual(foo);
-      });
-    });
-    describe('addStateManager', function() {
+    return describe('addStateManager', function() {
       it('creates a new StateManager', function() {
         var StateManager, spy, target;
         StateManager = Backbone.StateManager;
@@ -111,23 +128,6 @@
           initialize: void 0
         });
         return expect(Backbone.StateManager.prototype.initialize).toHaveBeenCalled();
-      });
-    });
-    return describe('prototype', function() {
-      return describe('initialize', function() {
-        return it('calls triggerState on the first state found that has initial : true set on it', function() {
-          var stateManager, states;
-          states = {
-            foo: {
-              initial: true
-            },
-            bar: {}
-          };
-          spyOn(Backbone.StateManager.prototype, 'triggerState');
-          stateManager = new Backbone.StateManager(states);
-          stateManager.initialize();
-          return expect(stateManager.triggerState).toHaveBeenCalledWith('foo', jasmine.any(Object));
-        });
       });
     });
   });
