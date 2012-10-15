@@ -36,7 +36,7 @@
         return it('calls triggerState on the first state found that has initial : true set on it', function() {
           spyOn(Backbone.StateManager.prototype, 'triggerState');
           _this.stateManager.initialize();
-          return expect(_this.stateManager.triggerState).toHaveBeenCalledWith(_this._states.withInitial, jasmine.any(Object));
+          return expect(_this.stateManager.triggerState).toHaveBeenCalledWith(jasmine.any(Object), jasmine.any(Object));
         });
       });
       describe('addState', function() {
@@ -46,7 +46,7 @@
         it('sets the state passed to states with the states callback', function() {
           _this.stateManager.addState('noTransitions', _this._states.noTransitions);
           expect(_this.stateManager.states.add).toHaveBeenCalled();
-          return expect(_this.stateManager.states.states.noTransitions).toEqual(_this._states.noTransitions);
+          return expect(_this.stateManager.states.states.noTransitions).toEqual(jasmine.any(Object));
         });
         return it('triggers remove:state and passes state name', function() {
           spyOn(_this.stateManager, 'trigger');
@@ -186,54 +186,6 @@
           });
         });
         return describe('transitions', function() {});
-      });
-    });
-    describe('States', function() {
-      describe('constructor', function() {
-        it('creates a hash', function() {
-          var states;
-          states = new Backbone.StateManager.States;
-          return expect(states.states).toBeDefined();
-        });
-        return it('adds passed in states', function() {
-          var states;
-          spyOn(Backbone.StateManager.States.prototype, 'add');
-          states = new Backbone.StateManager.States(_this._states);
-          return expect(states.add).toHaveBeenCalled();
-        });
-      });
-      return describe('prototype', function() {
-        beforeEach(function() {
-          return _this.states = new Backbone.StateManager.States(_this._states);
-        });
-        describe('add', function() {
-          it('creates a regExp from the name', function() {
-            spyOn(Backbone.StateManager.States, '_regExpStateConversion');
-            _this.states.add('foo', {});
-            return expect(Backbone.StateManager.States._regExpStateConversion).toHaveBeenCalledWith('foo');
-          });
-          return it('add the new object to states', function() {
-            _this.states.add('foo', {});
-            return expect(_this.states.states.foo).toBeDefined();
-          });
-        });
-        describe('remove', function() {
-          return it('removes the reference to the provided name', function() {
-            _this.states.states.foo = {};
-            _this.states.remove('foo');
-            return expect(_this.states.states.foo).toBeUndefined();
-          });
-        });
-        describe('find', function() {
-          return it('does a regular expression check to find a state that matches the provided name', function() {
-            return expect(_this.states.find('noTransitions')).toEqual(_this._states.noTransitions);
-          });
-        });
-        return describe('findInitial', function() {
-          return it('identifies the first state who is marked as initial', function() {
-            return expect(_this.states.findInitial()).toEqual(_this._states.withInitial);
-          });
-        });
       });
     });
     return describe('addStateManager', function() {

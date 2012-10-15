@@ -64,8 +64,7 @@ Backbone.StateManager = ((Backbone, _) ->
   _.extend StateManager.States.prototype,
     add : (name, callbacks) ->
       return false unless _.isString(name) and _.isObject callbacks
-      callbacks.regExp = StateManager.States._regExpStateConversion name
-      @states[name] = callbacks
+      @states[name] = new StateManager.State name, callbacks
 
     remove : (name) ->
       return false unless _.isString name
@@ -73,12 +72,23 @@ Backbone.StateManager = ((Backbone, _) ->
 
     find : (name) ->
       return false unless _.isString name
-      _.chain(@states).find((state) -> state.regExp?.test name).value()
+      _.chain(@states).find((state) -> state.matchName name).value()
 
     findInitial : -> _.find @states, (value, name) => value.initial
 
+  # Setup our State object
+  StateManager.State = (@name, options) ->
+    _.extend @, options
+    @regExpName = StateManager.State._regExpStateConversion @name
+    @
+
+  _.extend StateManager.State.prototype,
+    matchName : (name) -> @regExpName.test name
+
+    findTransition : (type, name) ->
+
   # Helper to convert state names into RegExp for matching
-  StateManager.States._regExpStateConversion = (name) ->
+  StateManager.State._regExpStateConversion = (name) ->
     name = name.replace(/[-[\]{}()+?.,\\^$|#\s]/g, '\\$&')
                 .replace(/:\w+/g, '([^\/]+)')
                 .replace(/\*\w+/g, '(.*?)')

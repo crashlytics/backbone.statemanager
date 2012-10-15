@@ -25,7 +25,7 @@ describe 'Backbone.StateManager', =>
         spyOn Backbone.StateManager.prototype, 'triggerState'
 
         @stateManager.initialize()
-        expect(@stateManager.triggerState).toHaveBeenCalledWith @_states.withInitial, jasmine.any Object
+        expect(@stateManager.triggerState).toHaveBeenCalledWith jasmine.any(Object), jasmine.any Object
 
     describe 'addState', =>
       beforeEach => spyOn @stateManager.states, 'add'
@@ -33,7 +33,7 @@ describe 'Backbone.StateManager', =>
       it 'sets the state passed to states with the states callback', =>
         @stateManager.addState 'noTransitions', @_states.noTransitions
         expect(@stateManager.states.add).toHaveBeenCalled()
-        expect(@stateManager.states.states.noTransitions).toEqual @_states.noTransitions
+        expect(@stateManager.states.states.noTransitions).toEqual jasmine.any(Object)
 
       it 'triggers remove:state and passes state name', =>
         spyOn @stateManager, 'trigger'
@@ -164,44 +164,6 @@ describe 'Backbone.StateManager', =>
 
       describe 'transitions', =>
 
-  describe 'States', =>
-    describe 'constructor', =>
-      it 'creates a hash', =>
-        states = new Backbone.StateManager.States
-        expect(states.states).toBeDefined()
-
-      it 'adds passed in states', =>
-        spyOn Backbone.StateManager.States.prototype, 'add'
-        states = new Backbone.StateManager.States @_states
-        expect(states.add).toHaveBeenCalled()
-
-    describe 'prototype', =>
-      beforeEach =>
-        @states = new Backbone.StateManager.States @_states
-
-      describe 'add', =>
-        it 'creates a regExp from the name', =>
-          spyOn Backbone.StateManager.States, '_regExpStateConversion'
-          @states.add 'foo', {}
-          expect(Backbone.StateManager.States._regExpStateConversion).toHaveBeenCalledWith 'foo'
-
-        it 'add the new object to states', =>
-          @states.add 'foo', {}
-          expect(@states.states.foo).toBeDefined()
-
-      describe 'remove', =>
-        it 'removes the reference to the provided name', =>
-          @states.states.foo = {}
-          @states.remove 'foo'
-          expect(@states.states.foo).toBeUndefined()
-
-      describe 'find', =>
-        it 'does a regular expression check to find a state that matches the provided name', =>
-          expect(@states.find 'noTransitions').toEqual @_states.noTransitions
-
-      describe 'findInitial', =>
-        it 'identifies the first state who is marked as initial', =>
-          expect(@states.findInitial()).toEqual @_states.withInitial
 
   describe 'addStateManager', =>
     it 'creates a new StateManager', =>

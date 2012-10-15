@@ -96,8 +96,7 @@ http://github.com/crashlytics/backbone.statemanager
         if (!(_.isString(name) && _.isObject(callbacks))) {
           return false;
         }
-        callbacks.regExp = StateManager.States._regExpStateConversion(name);
-        return this.states[name] = callbacks;
+        return this.states[name] = new StateManager.State(name, callbacks);
       },
       remove: function(name) {
         if (!_.isString(name)) {
@@ -110,8 +109,7 @@ http://github.com/crashlytics/backbone.statemanager
           return false;
         }
         return _.chain(this.states).find(function(state) {
-          var _ref;
-          return (_ref = state.regExp) != null ? _ref.test(name) : void 0;
+          return state.matchName(name);
         }).value();
       },
       findInitial: function() {
@@ -121,7 +119,19 @@ http://github.com/crashlytics/backbone.statemanager
         });
       }
     });
-    StateManager.States._regExpStateConversion = function(name) {
+    StateManager.State = function(name, options) {
+      this.name = name;
+      _.extend(this, options);
+      this.regExpName = StateManager.State._regExpStateConversion(this.name);
+      return this;
+    };
+    _.extend(StateManager.State.prototype, {
+      matchName: function(name) {
+        return this.regExpName.test(name);
+      },
+      findTransition: function(type, name) {}
+    });
+    StateManager.State._regExpStateConversion = function(name) {
       name = name.replace(/[-[\]{}()+?.,\\^$|#\s]/g, '\\$&').replace(/:\w+/g, '([^\/]+)').replace(/\*\w+/g, '(.*?)');
       return new RegExp("^" + name + "$");
     };
