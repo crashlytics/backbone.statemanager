@@ -63,10 +63,10 @@ describe 'Backbone.StateManager', =>
         spyOn @stateManager, 'enterState'
         spyOn @stateManager, 'exitState'
 
-      it 'calls exitState for the current state if it exists', =>
+      it 'calls exitState for the current state if it exists with new state name', =>
         @stateManager.currentState = 'bar'
         @stateManager.triggerState 'foo'
-        expect(@stateManager.exitState).toHaveBeenCalledWith jasmine.any Object
+        expect(@stateManager.exitState).toHaveBeenCalledWith toState : 'foo', fromState : 'bar'
 
       it 'calls enterState for the new state', =>
         @stateManager.triggerState 'foo'
@@ -123,7 +123,24 @@ describe 'Backbone.StateManager', =>
 
         it 'deletes the currentState', => expect(@stateManager.currentState).toBeUndefined()
 
-      describe 'transitions', =>
+      describe 'on states with transitions set', =>
+        beforeEach =>
+          spyOn(@states.exitTransition, 'findTransition').andReturn true
+          spyOn @states.exitTransition.transitions, 'onBeforeExitTo:enterTransition'
+          spyOn @states.exitTransition.transitions, 'onExitTo:enterTransition'
+          @stateManager.states.find.andReturn @states.exitTransition
+          @stateManager.currentState = 'exitTransition'
+          @stateManager.exitState toState : 'enterTransition'
+
+        afterEach => delete @stateManager.currentState
+
+        it 'calls onBeforeExitTo if it exists for the state passed', =>
+          expect(@states.exitTransition.findTransition).toHaveBeenCalledWith 'onBeforeExitTo', 'enterTransition'
+          expect(@states.exitTransition.transitions['onBeforeExitTo:enterTransition']).toHaveBeenCalledWith jasmine.any(Object)
+
+        it 'calls onExitTo if it exists for the state passed', =>
+          expect(@states.exitTransition.findTransition).toHaveBeenCalledWith 'onExitTo', 'enterTransition'
+          expect(@states.exitTransition.transitions['onExitTo:enterTransition']).toHaveBeenCalledWith jasmine.any(Object)
 
     describe 'enterState', =>
       beforeEach => spyOn @stateManager.states, 'find'

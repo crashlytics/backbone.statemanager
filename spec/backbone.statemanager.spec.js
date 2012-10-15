@@ -80,10 +80,13 @@
           spyOn(_this.stateManager, 'enterState');
           return spyOn(_this.stateManager, 'exitState');
         });
-        it('calls exitState for the current state if it exists', function() {
+        it('calls exitState for the current state if it exists with new state name', function() {
           _this.stateManager.currentState = 'bar';
           _this.stateManager.triggerState('foo');
-          return expect(_this.stateManager.exitState).toHaveBeenCalledWith(jasmine.any(Object));
+          return expect(_this.stateManager.exitState).toHaveBeenCalledWith({
+            toState: 'foo',
+            fromState: 'bar'
+          });
         });
         it('calls enterState for the new state', function() {
           _this.stateManager.triggerState('foo');
@@ -145,7 +148,29 @@
             return expect(_this.stateManager.currentState).toBeUndefined();
           });
         });
-        return describe('transitions', function() {});
+        return describe('on states with transitions set', function() {
+          beforeEach(function() {
+            spyOn(_this.states.exitTransition, 'findTransition').andReturn(true);
+            spyOn(_this.states.exitTransition.transitions, 'onBeforeExitTo:enterTransition');
+            spyOn(_this.states.exitTransition.transitions, 'onExitTo:enterTransition');
+            _this.stateManager.states.find.andReturn(_this.states.exitTransition);
+            _this.stateManager.currentState = 'exitTransition';
+            return _this.stateManager.exitState({
+              toState: 'enterTransition'
+            });
+          });
+          afterEach(function() {
+            return delete _this.stateManager.currentState;
+          });
+          it('calls onBeforeExitTo if it exists for the state passed', function() {
+            expect(_this.states.exitTransition.findTransition).toHaveBeenCalledWith('onBeforeExitTo', 'enterTransition');
+            return expect(_this.states.exitTransition.transitions['onBeforeExitTo:enterTransition']).toHaveBeenCalledWith(jasmine.any(Object));
+          });
+          return it('calls onExitTo if it exists for the state passed', function() {
+            expect(_this.states.exitTransition.findTransition).toHaveBeenCalledWith('onExitTo', 'enterTransition');
+            return expect(_this.states.exitTransition.transitions['onExitTo:enterTransition']).toHaveBeenCalledWith(jasmine.any(Object));
+          });
+        });
       });
       return describe('enterState', function() {
         beforeEach(function() {
