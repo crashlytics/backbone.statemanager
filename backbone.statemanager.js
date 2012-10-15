@@ -57,15 +57,26 @@ http://github.com/crashlytics/backbone.statemanager
         }
         if (!(newState === this.states[this.currentState] && !options.reEnter)) {
           if (this.currentState) {
-            this.exitState(this.currentState, options);
+            this.exitState(options);
           }
           return this.enterState(state, options);
         } else {
           return false;
         }
       },
-      enterState: function(obj, state, options) {},
-      exitState: function(obj, state, options) {},
+      enterState: function(state, options) {},
+      exitState: function(options) {
+        var matchedState;
+        if (options == null) {
+          options = {};
+        }
+        if (!((matchedState = this._matchState(this.currentState)) && _.isFunction(matchedState.exit))) {
+          return false;
+        }
+        this.trigger('before:exit:state', this.currentState, matchedState, options);
+        matchedState.exit(options);
+        return this.trigger('exit:state', this.currentState, matchedState, options);
+      },
       _matchState: function(state) {
         var stateRegex;
         if (!_.isString(state)) {
