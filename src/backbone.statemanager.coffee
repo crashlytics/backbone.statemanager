@@ -40,30 +40,35 @@ Backbone.StateManager = ((Backbone, _) ->
       else
         false
 
-    enterState : (state, options = {}) ->
-      return false unless (matchedState = @states.find @currentState) and _.isFunction matchedState.enter
-      @trigger 'before:enter:state', state, matchedState, options
-      matchedState.enter options
-      @trigger 'enter:state', @currentState, matchedState, options
-      @currentState = state
+    enterState : (name, options = {}) ->
+      return false unless (state = @states.find name) and _.isFunction state.enter
+
+      @trigger 'before:enter:state', name, state, options
+
+      # Find the the state we will be transitioning to and if it has a onBeforeEnterFrom method, call it
+      state.findTransition('onBeforeEnterFrom', options.toState)? options
+
+      state.enter options
+
+      state.findTransition('onEnterFrom', options.toState)? options
+
+      @trigger 'enter:state', name, state, options
+
+      @currentState = name
       @
 
     exitState : (options = {}) ->
-      return false unless (matchedCurrentState = @states.find @currentState) and _.isFunction matchedCurrentState.exit
+      return false unless (state = @states.find @currentState) and _.isFunction state.exit
 
-      @trigger 'before:exit:state', @currentState, matchedCurrentState, options
+      @trigger 'before:exit:state', @currentState, state, options
 
-      # Find the the state we will be transitioning to and if it has a onBeforeExitTo method, call it
-      if (matchedToState = @states.find options.toState) and matchedToState.findTransition 'onBeforeExitTo', options.toState
-        matchedToState.transitions["onBeforeExitTo:#{ options.toState }"] options
+      state.findTransition('onBeforeExitTo', options.toState)? options
 
-      matchedCurrentState.exit options
+      state.exit options
 
-      # Find the the state we will be transitioning to and if it has a exitTo method, call it
-      if (matchedToState = @states.find options.toState) and matchedToState.findTransition 'onExitTo', options.toState
-        matchedToState.transitions["onExitTo:#{ options.toState }"] options
+      state.findTransition('onExitTo', options.toState)? options
 
-      @trigger 'exit:state', @currentState, matchedCurrentState, options
+      @trigger 'exit:state', @currentState, state, options
       delete @currentState
       @
 
@@ -96,8 +101,6 @@ Backbone.StateManager = ((Backbone, _) ->
 
   _.extend StateManager.State.prototype,
     matchName : (name) -> @regExpName.test name
-
-    findTransition : (type, name) ->
 
     findTransition : (type, name) ->
 

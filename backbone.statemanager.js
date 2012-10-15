@@ -56,37 +56,43 @@ http://github.com/crashlytics/backbone.statemanager
           return false;
         }
       },
-      enterState: function(state, options) {
-        var matchedState;
+      enterState: function(name, options) {
+        var state, _base, _base1;
         if (options == null) {
           options = {};
         }
-        if (!((matchedState = this.states.find(this.currentState)) && _.isFunction(matchedState.enter))) {
+        if (!((state = this.states.find(name)) && _.isFunction(state.enter))) {
           return false;
         }
-        this.trigger('before:enter:state', state, matchedState, options);
-        matchedState.enter(options);
-        this.trigger('enter:state', this.currentState, matchedState, options);
-        this.currentState = state;
+        this.trigger('before:enter:state', name, state, options);
+        if (typeof (_base = state.findTransition('onBeforeEnterFrom', options.toState)) === "function") {
+          _base(options);
+        }
+        state.enter(options);
+        if (typeof (_base1 = state.findTransition('onEnterFrom', options.toState)) === "function") {
+          _base1(options);
+        }
+        this.trigger('enter:state', name, state, options);
+        this.currentState = name;
         return this;
       },
       exitState: function(options) {
-        var matchedCurrentState, matchedToState;
+        var state, _base, _base1;
         if (options == null) {
           options = {};
         }
-        if (!((matchedCurrentState = this.states.find(this.currentState)) && _.isFunction(matchedCurrentState.exit))) {
+        if (!((state = this.states.find(this.currentState)) && _.isFunction(state.exit))) {
           return false;
         }
-        this.trigger('before:exit:state', this.currentState, matchedCurrentState, options);
-        if ((matchedToState = this.states.find(options.toState)) && matchedToState.findTransition('onBeforeExitTo', options.toState)) {
-          matchedToState.transitions["onBeforeExitTo:" + options.toState](options);
+        this.trigger('before:exit:state', this.currentState, state, options);
+        if (typeof (_base = state.findTransition('onBeforeExitTo', options.toState)) === "function") {
+          _base(options);
         }
-        matchedCurrentState.exit(options);
-        if ((matchedToState = this.states.find(options.toState)) && matchedToState.findTransition('onExitTo', options.toState)) {
-          matchedToState.transitions["onExitTo:" + options.toState](options);
+        state.exit(options);
+        if (typeof (_base1 = state.findTransition('onExitTo', options.toState)) === "function") {
+          _base1(options);
         }
-        this.trigger('exit:state', this.currentState, matchedCurrentState, options);
+        this.trigger('exit:state', this.currentState, state, options);
         delete this.currentState;
         return this;
       }
@@ -124,18 +130,10 @@ http://github.com/crashlytics/backbone.statemanager
       },
       findInitial: function() {
         var _this = this;
-<<<<<<< HEAD
-        return _.chain(this.states).keys().find(function(state) {
-          return _this.states[state].initial;
-        }).value();
-      },
-      findTransition: function(type, name) {}
-=======
         return _.find(this.states, function(value, name) {
           return value.initial;
         });
       }
->>>>>>> 7a60c835fd66ed2f2ea27a0a93d0be9a0b04fc8f
     });
     StateManager.State = function(name, options) {
       this.name = name;
