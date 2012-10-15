@@ -62,24 +62,27 @@ Backbone.StateManager = ((Backbone, _) ->
     @
 
   _.extend StateManager.States.prototype,
-    add : (state, callbacks) ->
-      callbacks.regExp = StateManager.States._regExpStateConversion state
-      @states[state] = callbacks
+    add : (name, callbacks) ->
+      return false unless _.isString(name) and _.isObject callbacks
+      callbacks.regExp = StateManager.States._regExpStateConversion name
+      @states[name] = callbacks
 
-    remove : (state) -> delete @[state]
+    remove : (name) ->
+      return false unless _.isString name
+      delete @states[name]
 
     find : (name) ->
       return false unless _.isString name
       _.chain(@states).find((state) -> state.regExp?.test name).value()
 
-    findInitial : -> _.chain(@states).keys().find((state) => @states[state].initial).value()
+    findInitial : -> _.find @states, (value, name) => value.initial
 
   # Helper to convert state names into RegExp for matching
-  StateManager.States._regExpStateConversion = (state) ->
-    state = state.replace(/[-[\]{}()+?.,\\^$|#\s]/g, '\\$&')
+  StateManager.States._regExpStateConversion = (name) ->
+    name = name.replace(/[-[\]{}()+?.,\\^$|#\s]/g, '\\$&')
                    .replace(/:\w+/g, '([^\/]+)')
                    .replace(/\*\w+/g, '(.*?)')
-    new RegExp "^#{ state }$"
+    new RegExp "^#{ name }$"
 
   # Function we can use to provide StateManager capabilities to views on construct
   StateManager.addStateManager = (target, options = {}) ->
