@@ -8,3 +8,6 @@ window.spec =
         initial : true
         enter : ->
         exit : ->
+      nonMethodExit :
+        enter : ->
+        exit : {}

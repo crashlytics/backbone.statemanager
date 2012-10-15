@@ -12,6 +12,10 @@
           initial: true,
           enter: function() {},
           exit: function() {}
+        },
+        nonMethodExit: {
+          enter: function() {},
+          exit: {}
         }
       }
     }
