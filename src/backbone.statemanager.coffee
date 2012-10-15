@@ -74,32 +74,45 @@ Backbone.StateManager = ((Backbone, _) ->
     @
 
   _.extend StateManager.States.prototype,
-    add : (state, callbacks) ->
-      callbacks.regExp = StateManager.States._regExpStateConversion state
-      @states[state] = callbacks
+    add : (name, callbacks) ->
+      return false unless _.isString(name) and _.isObject callbacks
+      @states[name] = new StateManager.State name, callbacks
 
-    remove : (state) -> delete @[state]
+    remove : (name) ->
+      return false unless _.isString name
+      delete @states[name]
 
     find : (name) ->
       return false unless _.isString name
-      _.chain(@states).find((state) -> state.regExp?.test name).value()
+      _.chain(@states).find((state) -> state.matchName name).value()
 
-    findInitial : -> _.chain(@states).keys().find((state) => @states[state].initial).value()
+    findInitial : -> _.find @states, (value, name) => value.initial
+
+  # Setup our State object
+  StateManager.State = (@name, options) ->
+    _.extend @, options
+    @regExpName = StateManager.State._regExpStateConversion @name
+    @
+
+  _.extend StateManager.State.prototype,
+    matchName : (name) -> @regExpName.test name
+
+    findTransition : (type, name) ->
 
     findTransition : (type, name) ->
 
   # Helper to convert state names into RegExp for matching
-  StateManager.States._regExpStateConversion = (state) ->
-    state = state.replace(/[-[\]{}()+?.,\\^$|#\s]/g, '\\$&')
-                   .replace(/:\w+/g, '([^\/]+)')
-                   .replace(/\*\w+/g, '(.*?)')
-    new RegExp "^#{ state }$"
+  StateManager.State._regExpStateConversion = (name) ->
+    name = name.replace(/[-[\]{}()+?.,\\^$|#\s]/g, '\\$&')
+                .replace(/:\w+/g, '([^\/]+)')
+                .replace(/\*\w+/g, '(.*?)')
+    new RegExp "^#{ name }$"
 
   # Function we can use to provide StateManager capabilities to views on construct
   StateManager.addStateManager = (target, options = {}) ->
     new Error 'Target must be defined' unless target
     _deepBindAll target.states, target
-    stateManager = new Backbone.StateManager target.states, options
+    target.stateManager = stateManager = new Backbone.StateManager target.states, options
     target.triggerState = -> stateManager.triggerState.apply stateManager, arguments
     target.getCurrentState = -> stateManager.getCurrentState()
 

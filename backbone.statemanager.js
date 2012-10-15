@@ -102,33 +102,56 @@ http://github.com/crashlytics/backbone.statemanager
       return this;
     };
     _.extend(StateManager.States.prototype, {
-      add: function(state, callbacks) {
-        callbacks.regExp = StateManager.States._regExpStateConversion(state);
-        return this.states[state] = callbacks;
+      add: function(name, callbacks) {
+        if (!(_.isString(name) && _.isObject(callbacks))) {
+          return false;
+        }
+        return this.states[name] = new StateManager.State(name, callbacks);
       },
-      remove: function(state) {
-        return delete this[state];
+      remove: function(name) {
+        if (!_.isString(name)) {
+          return false;
+        }
+        return delete this.states[name];
       },
       find: function(name) {
         if (!_.isString(name)) {
           return false;
         }
         return _.chain(this.states).find(function(state) {
-          var _ref;
-          return (_ref = state.regExp) != null ? _ref.test(name) : void 0;
+          return state.matchName(name);
         }).value();
       },
       findInitial: function() {
         var _this = this;
+<<<<<<< HEAD
         return _.chain(this.states).keys().find(function(state) {
           return _this.states[state].initial;
         }).value();
       },
       findTransition: function(type, name) {}
+=======
+        return _.find(this.states, function(value, name) {
+          return value.initial;
+        });
+      }
+>>>>>>> 7a60c835fd66ed2f2ea27a0a93d0be9a0b04fc8f
     });
-    StateManager.States._regExpStateConversion = function(state) {
-      state = state.replace(/[-[\]{}()+?.,\\^$|#\s]/g, '\\$&').replace(/:\w+/g, '([^\/]+)').replace(/\*\w+/g, '(.*?)');
-      return new RegExp("^" + state + "$");
+    StateManager.State = function(name, options) {
+      this.name = name;
+      _.extend(this, options);
+      this.regExpName = StateManager.State._regExpStateConversion(this.name);
+      return this;
+    };
+    _.extend(StateManager.State.prototype, {
+      matchName: function(name) {
+        return this.regExpName.test(name);
+      },
+      findTransition: function(type, name) {}
+    });
+    StateManager.State._regExpStateConversion = function(name) {
+      name = name.replace(/[-[\]{}()+?.,\\^$|#\s]/g, '\\$&').replace(/:\w+/g, '([^\/]+)').replace(/\*\w+/g, '(.*?)');
+      return new RegExp("^" + name + "$");
     };
     StateManager.addStateManager = function(target, options) {
       var stateManager;
@@ -139,7 +162,7 @@ http://github.com/crashlytics/backbone.statemanager
         new Error('Target must be defined');
       }
       _deepBindAll(target.states, target);
-      stateManager = new Backbone.StateManager(target.states, options);
+      target.stateManager = stateManager = new Backbone.StateManager(target.states, options);
       target.triggerState = function() {
         return stateManager.triggerState.apply(stateManager, arguments);
       };
