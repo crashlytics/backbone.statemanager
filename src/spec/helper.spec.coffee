@@ -11,3 +11,6 @@ window.spec =
       nonMethodExit :
         enter : ->
         exit : {}
+      nonMethodEnter :
+        enter : {}
+        exit : ->
