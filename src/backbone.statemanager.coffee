@@ -8,8 +8,7 @@ http://github.com/crashlytics/backbone.statemanager
 Backbone.StateManager = ((Backbone, _) ->
 
   # Set our constructor - just a hash of states and a target
-  StateManager = (@target, states, @options = {}) ->
-    new Error 'Target must be defined' unless @target
+  StateManager = (states, @options = {}) ->
     @states = {}
 
     # Add each state into the stateManager
@@ -20,8 +19,14 @@ Backbone.StateManager = ((Backbone, _) ->
 
   # Extend the prototype to make functionality available for instantiations
   _.extend StateManager.prototype, Backbone.Events,
-    addState : (state, callbacks) -> @states[state] = callbacks
-    removeState : (state) -> delete @states[state]
+    addState : (state, callbacks) ->
+      @states[state] = callbacks
+      @trigger 'add:state', state
+
+    removeState : (state) ->
+      delete @states[state]
+      @trigger 'remove:state', state
+
     getCurrentState : -> @currentState
 
     initialize : (options = {}) ->
@@ -79,7 +84,9 @@ Backbone.StateManager = ((Backbone, _) ->
 
   # Function we can use to provide StateManager capabilities to views on construct
   StateManager.addStateManager = (target, options = {}) ->
-    stateManager = new Backbone.StateManager target, target.states, options
+    new Error 'Target must be defined' unless target
+    _.deepBindAll target.states, target
+    stateManager = new Backbone.StateManager target.states, options
     target.triggerState = -> stateManager.triggerState.apply stateManager, arguments
     target.getCurrentState = -> stateManager.getCurrentState()
 
@@ -88,6 +95,16 @@ Backbone.StateManager = ((Backbone, _) ->
 
     # Cleanup
     delete target.states
+
+  # Recursively finds methods in an object and binds them to target
+  _.deepBindAll = (obj) ->
+    target = _.last arguments
+    _.each obj, (value, key) ->
+      if _.isFunction value
+        obj[key] = _.bind value, target
+      else if _.isObject value
+        obj[key] = _.deepBindAll(value, target)
+    obj
 
   StateManager
 )(Backbone, _)

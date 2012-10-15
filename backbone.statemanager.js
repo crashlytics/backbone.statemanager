@@ -12,13 +12,9 @@ http://github.com/crashlytics/backbone.statemanager
 
   Backbone.StateManager = (function(Backbone, _) {
     var StateManager;
-    StateManager = function(target, states, options) {
+    StateManager = function(states, options) {
       var _this = this;
-      this.target = target;
       this.options = options != null ? options : {};
-      if (!this.target) {
-        new Error('Target must be defined');
-      }
       this.states = {};
       if (_.isObject(states)) {
         return _.each(states, function(value, key) {
@@ -29,10 +25,12 @@ http://github.com/crashlytics/backbone.statemanager
     StateManager.extend = Backbone.View.extend;
     _.extend(StateManager.prototype, Backbone.Events, {
       addState: function(state, callbacks) {
-        return this.states[state] = callbacks;
+        this.states[state] = callbacks;
+        return this.trigger('add:state', state);
       },
       removeState: function(state) {
-        return delete this.states[state];
+        delete this.states[state];
+        return this.trigger('remove:state', state);
       },
       getCurrentState: function() {
         return this.currentState;
@@ -60,7 +58,11 @@ http://github.com/crashlytics/backbone.statemanager
       if (options == null) {
         options = {};
       }
-      stateManager = new Backbone.StateManager(target, target.states, options);
+      if (!target) {
+        new Error('Target must be defined');
+      }
+      _.deepBindAll(target.states, target);
+      stateManager = new Backbone.StateManager(target.states, options);
       target.triggerState = function() {
         return stateManager.triggerState.apply(stateManager, arguments);
       };
@@ -71,6 +73,18 @@ http://github.com/crashlytics/backbone.statemanager
         stateManager.initialize(options);
       }
       return delete target.states;
+    };
+    _.deepBindAll = function(obj) {
+      var target;
+      target = _.last(arguments);
+      _.each(obj, function(value, key) {
+        if (_.isFunction(value)) {
+          return obj[key] = _.bind(value, target);
+        } else if (_.isObject(value)) {
+          return obj[key] = _.deepBindAll(value, target);
+        }
+      });
+      return obj;
     };
     return StateManager;
   })(Backbone, _);
