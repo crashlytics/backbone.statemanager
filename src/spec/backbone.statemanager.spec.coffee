@@ -1,76 +1,94 @@
-describe 'Backbone.StateManager', ->
+describe 'Backbone.StateManager', =>
+
+  beforeEach => @states = _.clone spec.helper.states
+
+  afterEach => delete @states
 
   it 'exists under Backbone.StateManager', -> expect(Backbone.StateManager).toBeDefined()
 
-  describe 'constructor', ->
+  describe 'constructor', =>
 
-    it 'creates a states object', ->
+    it 'creates a states object', =>
       stateManager = new Backbone.StateManager
       expect(stateManager.states).toBeDefined()
 
-    it 'calls addState with passed state', ->
+    it 'calls addState with passed state', =>
       spyOn Backbone.StateManager.prototype, 'addState'
-      stateManager = new Backbone.StateManager foo : ->
-      expect(stateManager.addState).toHaveBeenCalledWith 'foo', jasmine.any(Function)
+      stateManager = new Backbone.StateManager @states
+      expect(stateManager.addState).toHaveBeenCalledWith 'noTransitions', jasmine.any Object
 
-  describe 'prototype', ->
+  describe 'prototype', =>
 
-    describe 'initialize', ->
+    describe 'initialize', =>
 
-      it 'calls triggerState on the first state found that has initial : true set on it', ->
-        states =
-          foo :
-            initial : true
-          bar : {}
-
+      it 'calls triggerState on the first state found that has initial : true set on it', =>
         spyOn Backbone.StateManager.prototype, 'triggerState'
-        stateManager = new Backbone.StateManager states
+        stateManager = new Backbone.StateManager @states
 
         stateManager.initialize()
-        expect(stateManager.triggerState).toHaveBeenCalledWith 'foo', jasmine.any Object
+        expect(stateManager.triggerState).toHaveBeenCalledWith 'withInitial', jasmine.any Object
 
-    describe 'addState', ->
+    describe 'addState', =>
 
-      it 'sets the state passed to states with the states callback', ->
+      beforeEach =>
+        @stateManager = new Backbone.StateManager
+        @stateManager.states = @states
+
+      afterEach => delete @stateManager
+
+      it 'sets the state passed to states with the states callback', =>
+        @stateManager.addState 'noTransitions', @states.noTransitions
+        expect(stateManager.states.noTransitions).toEqual @states.noTransitions
+
+      it 'triggers remove:state and passes state name', =>
+        spyOn @stateManager, 'trigger'
+        @stateManager.addState 'noTransitions'
+        expect(stateManager.trigger).toHaveBeenCalledWith 'add:state', 'noTransitions'
+
+    describe 'removeState', =>
+
+      beforeEach =>
+        @stateManager = new Backbone.StateManager
+        @stateManager.states = @states
+
+      afterEach => delete @stateManager
+
+      it 'removes the state', =>
+        @stateManager.removeState 'noTransitions'
+        expect(@stateManager.states.noTransitions).toBeUndefined()
+
+      it 'triggers remove:state and passes state name', =>
+        spyOn @stateManager, 'trigger'
+        @stateManager.removeState 'noTransitions'
+        expect(stateManager.trigger).toHaveBeenCalledWith 'remove:state', 'noTransitions'
+
+     describe 'getCurrentState', =>
+
+      it 'returns the current state', =>
         stateManager = new Backbone.StateManager
-        stateManager.addState 'foo', bar = ->
-        expect(stateManager.states.foo).toEqual bar
-
-    describe 'removeState', ->
-
-      it 'removes the state', ->
-        stateManager = new Backbone.StateManager
-        stateManager.states = foo : ->
-        stateManager.removeState 'foo'
-        expect(stateManager.states.foo).toBeUndefined()
-
-     describe 'getCurrentState', ->
-
-      it 'returns the current state', ->
-        stateManager = new Backbone.StateManager
-        stateManager.currentState = foo = {}
+        stateManager.currentState = @states.noTransitions
         currentState = stateManager.getCurrentState()
-        expect(currentState).toEqual foo
+        expect(currentState).toEqual @states.noTransitions
 
-  describe 'addStateManager', ->
+  describe 'addStateManager', =>
 
-    it 'creates a new StateManager', ->
+    it 'creates a new StateManager', =>
       StateManager = Backbone.StateManager
       spy = spyOn(Backbone, 'StateManager').andCallThrough()
       spy.__proto__ = StateManager
       spy.prototype = StateManager.prototype
-      target = states : foo : 'bar'
+      target = states : @states
       Backbone.StateManager.addStateManager target
       expect(Backbone.StateManager).toHaveBeenCalledWith jasmine.any(Object), jasmine.any(Object)
 
-    it 'binds all of targets states methods to the target', ->
+    it 'binds all of targets states methods to the target', =>
       spyOn _, 'bind'
-      target = states : foo : bar : ->
+      target = states : @states
       Backbone.StateManager.addStateManager target
       expect(_.bind).toHaveBeenCalledWith jasmine.any(Function), target
 
-    it 'allows callthrough on the target for triggerState', ->
-      target = foo : 'bar'
+    it 'allows callthrough on the target for triggerState', =>
+      target = states : @states
       spyOn Backbone.StateManager.prototype, 'triggerState'
 
       Backbone.StateManager.addStateManager target
@@ -95,7 +113,7 @@ describe 'Backbone.StateManager', ->
       Backbone.StateManager.addStateManager {}
       expect(Backbone.StateManager.prototype.initialize).toHaveBeenCalled()
 
-    it 'does not call initialize if options.initialize is set to false(y)', ->
+    it 'does not call initialize if options.initialize is set to false(y)', =>
       spyOn Backbone.StateManager.prototype, 'initialize'
 
       _.each [false, null, 0], (value) ->
