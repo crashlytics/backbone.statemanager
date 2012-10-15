@@ -65,7 +65,7 @@ describe 'Backbone.StateManager', ->
 
     it 'binds all of targets states methods to the target', ->
       spyOn _, 'bind'
-      target = states : foo : ->
+      target = states : foo : bar : ->
       Backbone.StateManager.addStateManager target
       expect(_.bind).toHaveBeenCalledWith jasmine.any(Function), target
 
@@ -104,5 +104,3 @@ describe 'Backbone.StateManager', ->
 
       Backbone.StateManager.addStateManager {}, { initialize : undefined }
       expect(Backbone.StateManager.prototype.initialize).toHaveBeenCalled()
-
-

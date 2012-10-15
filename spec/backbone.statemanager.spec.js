@@ -85,7 +85,9 @@
         spyOn(_, 'bind');
         target = {
           states: {
-            foo: function() {}
+            foo: {
+              bar: function() {}
+            }
           }
         };
         Backbone.StateManager.addStateManager(target);
