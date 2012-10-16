@@ -1,5 +1,5 @@
 ###
-Backbone.Statemanager, v0.0.1-alpha
+Backbone.Statemanager, v0.0.1
 Copyright (c)2012 Patrick Camacho and Mark Roseboom, Crashlytics
 Distributed under MIT license
 http://github.com/crashlytics/backbone.statemanager
