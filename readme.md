@@ -29,39 +29,40 @@ Backbone.StateManager currently has the following dependencies:
 Backbone.StateManager is written in CoffeeScript. You can download the raw source code
 from the "src" folder or download the JavaScript build in the main directory.
 
-The latest stable releases can be found at the links below:
-
-### Builds
+The latest stable releases can be found at the links:
 
 * Development: [backbone.statemanager.js](https://raw.github.com/crashlytics/backbone.statemanager/master/backbone.statemanager.js)
 
 * Production: [backbone.statemanager.min.js](https://raw.github.com/crashlytics/backbone.statemanager/master/backbone.statemanager.min.js)
 
-### StateManager's Pieces
-
-StateManager is compromised of three primary pieces:
-
-* StateManager: A management object that tracks the current state, handles state requests, and publishes events
-* States: A collection object that manages an array of states
-* State: An individual state object that is responsible for exiting, entering, and transitioning
-
 ## Getting Started
 
-Backbone.StateManager constructor takes two arguments, a set of states and options but neither is required.
-Passed in states will be automatically added and the options are set as an instance property.
+Backbone.StateManager constructor takes two arguments, an state object and an options object, but neither is required.Passed in states will be automatically added and the options are set as an instance property.
 
 ```coffee
-  stateManager = new Backbone.StateManager()
+  stateManager = new Backbone.StateManager
+
+  # or
+
+  states =
+    foo :
+      enter : -> console.log 'enter bar'
+      exit : -> console.log 'exit foo'
+    bar :
+      enter : -> console.log 'enter bar'
+      exit : -> console.log 'exit bar'
+
+  stateManager = new Backbone.StateManager states
 ```
 
-### State
+### Defining a State
 
-A state is comprised of an `enter`, `exit`, and optionally `transitions`. A state is intended to be as modular as possible. As a result each state has `enter` and `exit` methods that are used when moving between States.
+A state is intended to be as modular as possible, so each state is expected to contain `enter` and `exit` methods that are used when entering or leaving that state. A state definition can also have a transitions property that contains several methods to be used when moving between specified states.
 
 ```coffee
   {
-    enter : -> # method to be called when state enters
-    exit : -> # method to be called when state exits
+    enter : -> console.log 'enter'
+    exit : -> console.log 'exit'
     transitions :
       'onBeforeExitTo:anotherState' : -> # method to be called before exit to `anotherState`
       'onExitTo:anotherState' : -> # method to be called on exit to `anotherState`
@@ -70,31 +71,52 @@ A state is comprised of an `enter`, `exit`, and optionally `transitions`. A stat
   }
 ```
 
-### State Transitions
+### Defining State Transitions
 
 Transitions are used to execute additional functionality when moving between specified states. There are 4 types of transitions that Backbone.StateManager will defaultly look for: `onBeforeExitTo`, `onExitTo`, `onBeforeEnterFrom`, and `onEnterFrom`. Each transition is a key value pair, where the value is a method and the key defines the transition type and the specified state (eg `onEnterFrom:specifiedState`).
 
-### Add State
+### Adding a State
 
-New states can be added using `addState` and passing the name of the state and a state object as defined above.
+New states can be added individually using `addState` and passing the name of the state and a state object as defined above.
 
 ```coffee
-  stateManager.addState name, callbacks
+  stateManager.addState name, definition
 ```
 
-### Trigger State
+### Triggering a State
 
-A state is triggered using `triggerState` and passing the name of the state and options.
+A state is triggered using `triggerState` and passing the name of the state and options. If the requested state is already the currentState, no methods will be executed. This can be overriden by passing in the option `reEnter : true` to the method.
 
 ```coffee
   stateManager.triggerState name, options
 ```
-### Remove State
+### Removing a State
 
 A states can be added using `removeState` and passing in the name of the state.
 
 ```coffee
   stateManager.remove name
+```
+
+### Using with Objects
+
+StateManager provides an easy method to painlessly add a StateManager to any object. `StateManager.addStateManager` takes a target object and an optional set of options, reads in any states defined on the target, and creates a new StateManager. It also sets a number of methods on target, including `triggerState`, `getCurrentState`, and a reference to the StateManager at `target.stateManager`.
+
+```coffee
+
+View = Backbone.View.extend
+  states :
+    foo :
+      enter : -> console.log 'enter bar'
+      exit : -> console.log 'exit foo'
+      transitions :
+        'onExitTo:bar' : -> 'just exited and bar is about to be entered'
+    bar :
+      enter : -> console.log 'enter bar'
+      exit : -> console.log 'exit bar'
+
+  initialize : -> Backbone.StateManager.addStateManager @
+
 ```
 
 ### [Github Issues](//github.com/crashlytics/backbone.statemanager/issues)
