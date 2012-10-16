@@ -128,7 +128,7 @@ describe 'Backbone.StateManager', =>
           @stateManager.states.find.andReturn exit : (->), __proto__ : Backbone.StateManager.State.prototype
           @transitionCallback = jasmine.createSpy 'transitionCallback'
           spyOn(Backbone.StateManager.State.prototype, 'findTransition').andReturn @transitionCallback
-          @stateManager.currentState = 'exitTransition'
+          @stateManager.currentState = 'enterTransition'
           @stateManager.exitState toState : 'enterTransition'
 
         afterEach =>
