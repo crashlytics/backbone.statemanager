@@ -34,7 +34,7 @@
           exit: function() {},
           transitions: {
             'onBeforeEnterFrom:exitTransition': function() {},
-            'onEnterFrom:enterTransition': function() {}
+            'onEnterFrom:exitTransition': function() {}
           }
         }
       }

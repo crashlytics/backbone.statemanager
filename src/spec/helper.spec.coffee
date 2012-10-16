@@ -25,4 +25,4 @@ window.spec =
         exit : ->
         transitions :
           'onBeforeEnterFrom:exitTransition' : ->
-          'onEnterFrom:enterTransition' : ->
+          'onEnterFrom:exitTransition' : ->

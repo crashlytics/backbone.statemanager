@@ -156,7 +156,7 @@
             });
             _this.transitionCallback = jasmine.createSpy('transitionCallback');
             spyOn(Backbone.StateManager.State.prototype, 'findTransition').andReturn(_this.transitionCallback);
-            _this.stateManager.currentState = 'exitTransition';
+            _this.stateManager.currentState = 'enterTransition';
             return _this.stateManager.exitState({
               toState: 'enterTransition'
             });
