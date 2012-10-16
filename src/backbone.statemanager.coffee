@@ -20,8 +20,8 @@ Backbone.StateManager = ((Backbone, _) ->
 
     getCurrentState : -> @currentState
 
-    addState : (name, callbacks) ->
-      @states.add name, callbacks
+    addState : (name, definition) ->
+      @states.add name, definition
       @trigger 'add:state', name
 
     removeState : (name) ->
@@ -79,9 +79,9 @@ Backbone.StateManager = ((Backbone, _) ->
     @
 
   _.extend StateManager.States.prototype,
-    add : (name, callbacks) ->
-      return false unless _.isString(name) and _.isObject callbacks
-      @states[name] = new StateManager.State name, callbacks
+    add : (name, definition) ->
+      return false unless _.isString(name) and _.isObject definition
+      @states[name] = new StateManager.State name, definition
 
     remove : (name) ->
       return false unless _.isString name

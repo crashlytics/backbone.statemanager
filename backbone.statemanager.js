@@ -22,8 +22,8 @@ http://github.com/crashlytics/backbone.statemanager
       getCurrentState: function() {
         return this.currentState;
       },
-      addState: function(name, callbacks) {
-        this.states.add(name, callbacks);
+      addState: function(name, definition) {
+        this.states.add(name, definition);
         return this.trigger('add:state', name);
       },
       removeState: function(name) {
@@ -108,11 +108,11 @@ http://github.com/crashlytics/backbone.statemanager
       return this;
     };
     _.extend(StateManager.States.prototype, {
-      add: function(name, callbacks) {
-        if (!(_.isString(name) && _.isObject(callbacks))) {
+      add: function(name, definition) {
+        if (!(_.isString(name) && _.isObject(definition))) {
           return false;
         }
-        return this.states[name] = new StateManager.State(name, callbacks);
+        return this.states[name] = new StateManager.State(name, definition);
       },
       remove: function(name) {
         if (!_.isString(name)) {
