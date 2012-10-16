@@ -37,13 +37,11 @@ The latest stable releases can be found at the links:
 
 ## Getting Started
 
-Backbone.StateManager constructor takes two arguments, an state object and an options object, but neither is required.Passed in states will be automatically added and the options are set as an instance property.
+Backbone.StateManager constructor takes two arguments, a state object and an options object, but neither is required.Passed in states will be automatically added and the options are set as an instance property.
 
 ```coffee
   stateManager = new Backbone.StateManager
-
   # or
-
   states =
     foo :
       enter : -> console.log 'enter bar'
@@ -95,7 +93,7 @@ A state is triggered using `triggerState` and passing the name of the state and 
 A states can be added using `removeState` and passing in the name of the state.
 
 ```coffee
-  stateManager.remove name
+  stateManager.removeState name
 ```
 
 ### Using with Objects
