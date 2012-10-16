@@ -39,19 +39,19 @@ http://github.com/crashlytics/backbone.statemanager
           return this.triggerState(initial, options);
         }
       },
-      triggerState: function(state, options) {
+      triggerState: function(name, options) {
         if (options == null) {
           options = {};
         }
-        if (!(state === this.currentState && !options.reEnter)) {
+        if (!(name === this.currentState && !options.reEnter)) {
           _.extend(options, {
-            toState: state,
+            toState: name,
             fromState: this.currentState
           });
           if (this.currentState) {
             this.exitState(options);
           }
-          return this.enterState(state, options);
+          return this.enterState(name, options);
         } else {
           return false;
         }

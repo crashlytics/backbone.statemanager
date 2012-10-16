@@ -32,11 +32,11 @@ Backbone.StateManager = ((Backbone, _) ->
       # We trigger the initial state if it is set
       @triggerState initial, options if initial = @states.findInitial()
 
-    triggerState : (state, options = {}) ->
-      unless state is @currentState and not options.reEnter
-        _.extend options, toState : state, fromState : @currentState
+    triggerState : (name, options = {}) ->
+      unless name is @currentState and not options.reEnter
+        _.extend options, toState : name, fromState : @currentState
         @exitState options if @currentState
-        @enterState state, options
+        @enterState name, options
       else
         false
 
