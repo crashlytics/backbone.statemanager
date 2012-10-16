@@ -45,10 +45,56 @@ StateManager is compromised of three primary pieces:
 * States: A collection object that manages an array of states
 * State: An individual state object that is responsible for exiting, entering, and transitioning
 
-### Getting Started
+## Getting Started
 
-```coffeescript
-  stateManager = new Backbone.StateManager
+Backbone.StateManager constructor takes two arguments, a set of states and options but neither is required.
+Passed in states will be automatically added and the options are set as an instance property.
+
+```coffee
+  stateManager = new Backbone.StateManager()
+```
+
+### State
+
+A state is comprised of an `enter`, `exit`, and optionally `transitions`. A state is intended to be as modular as possible. As a result each state has `enter` and `exit` methods that are used when moving between States.
+
+```coffee
+  {
+    enter : -> # method to be called when state enters
+    exit : -> # method to be called when state exits
+    transitions :
+      'onBeforeExitTo:anotherState' : -> # method to be called before exit to `anotherState`
+      'onExitTo:anotherState' : -> # method to be called on exit to `anotherState`
+      'onBeforeEnterFrom:anotherState' : -> # method to be called before entering from `anotherState`
+      'onEnterFrom:anotherState' : -> # method to be called on entering from `anotherState`
+  }
+```
+
+### State Transitions
+
+Transitions are used to execute additional functionality when moving between specified states. There are 4 types of transitions that Backbone.StateManager will defaultly look for: `onBeforeExitTo`, `onExitTo`, `onBeforeEnterFrom`, and `onEnterFrom`. Each transition is a key value pair, where the value is a method and the key defines the transition type and the specified state (eg `onEnterFrom:specifiedState`).
+
+### Add State
+
+New states can be added using `addState` and passing the name of the state and a state object as defined above.
+
+```coffee
+  stateManager.addState name, callbacks
+```
+
+### Trigger State
+
+A state is triggered using `triggerState` and passing the name of the state and options.
+
+```coffee
+  stateManager.triggerState name, options
+```
+### Remove State
+
+A states can be added using `removeState` and passing in the name of the state.
+
+```coffee
+  stateManager.remove name
 ```
 
 ### [Github Issues](//github.com/crashlytics/backbone.statemanager/issues)
