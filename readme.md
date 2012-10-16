@@ -5,7 +5,7 @@ Simple, powerful state management for Backbone.js
 ## About StateManager
 
 Backbone.StateManager is a module for Backbone.js that adds the ability to easily
-manage and utilize states in any scale JavaScript applications. It can be used as
+manage and utilize states in any size JavaScript application. It can be used as
 a stand alone object or in conjunction with a target object through it's addStateManager
 method.
 
@@ -47,5 +47,8 @@ StateManager is compromised of three primary pieces:
 
 ### Getting Started
 
+```coffeescript
+  stateManager = new Backbone.StateManager
+```
 
 ### [Github Issues](//github.com/crashlytics/backbone.statemanager/issues)
