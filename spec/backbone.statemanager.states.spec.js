@@ -51,7 +51,7 @@
       });
       return describe('findInitial', function() {
         return it('identifies the first state who is marked as initial', function() {
-          return expect(_this.states.findInitial()).toEqual(jasmine.any(Object));
+          return expect(_this.states.findInitial()).toEqual('withInitial');
         });
       });
     });

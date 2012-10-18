@@ -25,7 +25,7 @@ describe 'Backbone.StateManager', =>
         spyOn Backbone.StateManager.prototype, 'triggerState'
 
         @stateManager.initialize()
-        expect(@stateManager.triggerState).toHaveBeenCalledWith jasmine.any(Object), jasmine.any Object
+        expect(@stateManager.triggerState).toHaveBeenCalledWith 'withInitial', jasmine.any Object
 
     describe 'addState', =>
       beforeEach => spyOn @stateManager.states, 'add'

@@ -39,4 +39,4 @@ describe 'Backbone.StateManager.States', =>
 
     describe 'findInitial', =>
       it 'identifies the first state who is marked as initial', =>
-        expect(@states.findInitial()).toEqual jasmine.any Object
+        expect(@states.findInitial()).toEqual 'withInitial'

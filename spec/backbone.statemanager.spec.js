@@ -36,7 +36,7 @@
         return it('calls triggerState on the first state found that has initial : true set on it', function() {
           spyOn(Backbone.StateManager.prototype, 'triggerState');
           _this.stateManager.initialize();
-          return expect(_this.stateManager.triggerState).toHaveBeenCalledWith(jasmine.any(Object), jasmine.any(Object));
+          return expect(_this.stateManager.triggerState).toHaveBeenCalledWith('withInitial', jasmine.any(Object));
         });
       });
       describe('addState', function() {
