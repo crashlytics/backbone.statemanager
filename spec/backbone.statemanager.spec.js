@@ -263,6 +263,15 @@
         Backbone.StateManager.addStateManager(target);
         return expect(_.bind).toHaveBeenCalledWith(jasmine.any(Function), target);
       });
+      it('does not call deepBind if states are not defined', function() {
+        var target;
+        spyOn(_, 'bind');
+        target = {
+          states: void 0
+        };
+        Backbone.StateManager.addStateManager(target);
+        return expect(_.bind).not.toHaveBeenCalled();
+      });
       it('allows callthrough on the target for triggerState', function() {
         var target;
         target = {

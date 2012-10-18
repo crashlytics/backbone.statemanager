@@ -221,6 +221,12 @@ describe 'Backbone.StateManager', =>
       Backbone.StateManager.addStateManager target
       expect(_.bind).toHaveBeenCalledWith jasmine.any(Function), target
 
+    it 'does not call deepBind if states are not defined', =>
+      spyOn _, 'bind'
+      target = states : undefined
+      Backbone.StateManager.addStateManager target
+      expect(_.bind).not.toHaveBeenCalled()
+
     it 'allows callthrough on the target for triggerState', =>
       target = states : @_states
       spyOn Backbone.StateManager.prototype, 'triggerState'
