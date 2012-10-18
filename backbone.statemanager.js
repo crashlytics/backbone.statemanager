@@ -129,10 +129,11 @@ http://github.com/crashlytics/backbone.statemanager
         }).value();
       },
       findInitial: function() {
-        var _this = this;
-        return _.find(this.states, function(value, name) {
+        var _ref,
+          _this = this;
+        return (_ref = _.find(this.states, function(value, name) {
           return value.initial;
-        });
+        })) != null ? _ref.name : void 0;
       }
     });
     StateManager.State = function(name, options) {

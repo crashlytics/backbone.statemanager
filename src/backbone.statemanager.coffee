@@ -91,7 +91,7 @@ Backbone.StateManager = ((Backbone, _) ->
       return false unless _.isString name
       _.chain(@states).find((state) -> state.matchName name).value()
 
-    findInitial : -> _.find @states, (value, name) => value.initial
+    findInitial : -> (_.find @states, (value, name) => value.initial)?.name
 
   # Setup our State object
   StateManager.State = (@name, options) ->
