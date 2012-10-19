@@ -119,7 +119,7 @@ Backbone.StateManager = ((Backbone, _) ->
   # Function we can use to provide StateManager capabilities to views on construct
   StateManager.addStateManager = (target, options = {}) ->
     new Error 'Target must be defined' unless target
-    _deepBindAll target.states, target
+    _deepBindAll target.states, target if target.states
     target.stateManager = stateManager = new Backbone.StateManager target.states, options
     target.triggerState = -> stateManager.triggerState.apply stateManager, arguments
     target.getCurrentState = -> stateManager.getCurrentState()
