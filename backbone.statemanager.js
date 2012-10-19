@@ -129,10 +129,11 @@ http://github.com/crashlytics/backbone.statemanager
         }).value();
       },
       findInitial: function() {
-        var _this = this;
-        return _.find(this.states, function(value, name) {
+        var _ref,
+          _this = this;
+        return (_ref = _.find(this.states, function(value, name) {
           return value.initial;
-        });
+        })) != null ? _ref.name : void 0;
       }
     });
     StateManager.State = function(name, options) {
@@ -167,9 +168,7 @@ http://github.com/crashlytics/backbone.statemanager
       if (!target) {
         new Error('Target must be defined');
       }
-      if (target.states) {
-        _deepBindAll(target.states, target);
-      }
+      _deepBindAll(target.states, target);
       target.stateManager = stateManager = new Backbone.StateManager(target.states, options);
       target.triggerState = function() {
         return stateManager.triggerState.apply(stateManager, arguments);

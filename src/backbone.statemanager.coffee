@@ -91,7 +91,7 @@ Backbone.StateManager = ((Backbone, _) ->
       return false unless _.isString name
       _.chain(@states).find((state) -> state.matchName name).value()
 
-    findInitial : -> _.find @states, (value, name) => value.initial
+    findInitial : -> (_.find @states, (value, name) => value.initial)?.name
 
   # Setup our State object
   StateManager.State = (@name, options) ->
@@ -119,7 +119,7 @@ Backbone.StateManager = ((Backbone, _) ->
   # Function we can use to provide StateManager capabilities to views on construct
   StateManager.addStateManager = (target, options = {}) ->
     new Error 'Target must be defined' unless target
-    _deepBindAll target.states, target if target.states
+    _deepBindAll target.states, target
     target.stateManager = stateManager = new Backbone.StateManager target.states, options
     target.triggerState = -> stateManager.triggerState.apply stateManager, arguments
     target.getCurrentState = -> stateManager.getCurrentState()

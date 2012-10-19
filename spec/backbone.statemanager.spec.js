@@ -36,7 +36,7 @@
         return it('calls triggerState on the first state found that has initial : true set on it', function() {
           spyOn(Backbone.StateManager.prototype, 'triggerState');
           _this.stateManager.initialize();
-          return expect(_this.stateManager.triggerState).toHaveBeenCalledWith(jasmine.any(Object), jasmine.any(Object));
+          return expect(_this.stateManager.triggerState).toHaveBeenCalledWith('withInitial', jasmine.any(Object));
         });
       });
       describe('addState', function() {
@@ -262,15 +262,6 @@
         };
         Backbone.StateManager.addStateManager(target);
         return expect(_.bind).toHaveBeenCalledWith(jasmine.any(Function), target);
-      });
-      it('does not call deepBind if states are not defined', function() {
-        var target;
-        spyOn(_, 'bind');
-        target = {
-          states: void 0
-        };
-        Backbone.StateManager.addStateManager(target);
-        return expect(_.bind).not.toHaveBeenCalled();
       });
       it('allows callthrough on the target for triggerState', function() {
         var target;
