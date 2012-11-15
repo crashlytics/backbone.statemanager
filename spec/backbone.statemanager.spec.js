@@ -254,6 +254,17 @@
         expect(Backbone.StateManager).toHaveBeenCalledWith(jasmine.any(Object), jasmine.any(Object));
         return expect(target.stateManager).toBeDefined();
       });
+      it('if states is set to a function, executes it', function() {
+        var StateManager, states, target;
+        StateManager = Backbone.StateManager;
+        states = jasmine.createSpy('states').andReturn(_this._states);
+        target = {
+          states: states
+        };
+        Backbone.StateManager.addStateManager(target);
+        expect(states).toHaveBeenCalled();
+        return expect(_.keys(target.stateManager.states.states)).toEqual(_.keys(_this._states));
+      });
       it('binds all of targets states methods to the target', function() {
         var target;
         spyOn(_, 'bind');

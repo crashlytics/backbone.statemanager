@@ -1,5 +1,5 @@
 ###
-Backbone.Statemanager, v0.0.1
+Backbone.Statemanager, v0.0.2
 Copyright (c)2012 Patrick Camacho and Mark Roseboom, Crashlytics
 Distributed under MIT license
 http://github.com/crashlytics/backbone.statemanager
@@ -119,8 +119,10 @@ Backbone.StateManager = ((Backbone, _) ->
   # Function we can use to provide StateManager capabilities to views on construct
   StateManager.addStateManager = (target, options = {}) ->
     new Error 'Target must be defined' unless target
-    _deepBindAll target.states, target
-    target.stateManager = stateManager = new Backbone.StateManager target.states, options
+    # Allow statest to be a method (helpful for prototype definitions that get mutated with _.bind)
+    states = if _.isFunction target.states then target.states() else target.states
+    _deepBindAll states, target
+    target.stateManager = stateManager = new Backbone.StateManager states, options
     target.triggerState = -> stateManager.triggerState.apply stateManager, arguments
     target.getCurrentState = -> stateManager.getCurrentState()
 
