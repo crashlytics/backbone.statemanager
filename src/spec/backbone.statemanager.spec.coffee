@@ -215,6 +215,14 @@ describe 'Backbone.StateManager', =>
       expect(Backbone.StateManager).toHaveBeenCalledWith jasmine.any(Object), jasmine.any(Object)
       expect(target.stateManager).toBeDefined()
 
+    it 'if states is set to a function, executes it', =>
+      StateManager = Backbone.StateManager
+      states = jasmine.createSpy('states').andReturn @_states
+      target = states : states
+      Backbone.StateManager.addStateManager target
+      expect(states).toHaveBeenCalled()
+      expect(_.keys target.stateManager.states.states).toEqual _.keys @_states
+
     it 'binds all of targets states methods to the target', =>
       spyOn _, 'bind'
       target = states : @_states
