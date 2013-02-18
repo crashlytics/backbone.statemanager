@@ -1,5 +1,5 @@
 ###
-Backbone.Statemanager, v0.0.2
+Backbone.Statemanager, v0.0.3
 Copyright (c)2012 Patrick Camacho and Mark Roseboom, Crashlytics
 Distributed under MIT license
 http://github.com/crashlytics/backbone.statemanager
@@ -105,8 +105,13 @@ Backbone.StateManager = ((Backbone, _) ->
     findTransition : (type, name) ->
       return false unless @transitions and _.isString(name) and _.isString type
       _.find @transitions, (value, key) =>
-        key.indexOf("#{ type }:") is 0 and
-          StateManager.State._regExpStateConversion(key.substring(type.length + 1)).test name
+        if key.indexOf("#{ type }:") is 0
+          if inverse = key.indexOf(":not:") is type.length
+            key = key.slice type.length + 5
+          else
+            key = key.slice type.length + 1
+
+          StateManager.State._regExpStateConversion(key).test(name) isnt inverse
 
 
   # Helper to convert state names into RegExp for matching

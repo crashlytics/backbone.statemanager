@@ -27,14 +27,33 @@
         });
       });
       return describe('findTransition', function() {
-        return it('finds functions who have a key matching the type and name', function() {
-          var test;
-          test = new Backbone.StateManager.State('foo', {
-            transitions: {
-              'onFoo:Bar*splat': function() {}
-            }
+        describe('straight match', function() {
+          return it('finds functions who have a key matching the type and name', function() {
+            var test;
+            test = new Backbone.StateManager.State('foo', {
+              transitions: {
+                'onFoo:Bar*splat': function() {}
+              }
+            });
+            return expect(test.findTransition('onFoo', 'Bar123')).toEqual(jasmine.any(Function));
           });
-          return expect(test.findTransition('onFoo', 'Bar123')).toEqual(jasmine.any(Function));
+        });
+        return describe('not match', function() {
+          return it('finds functions who have a key that does not match the name', function() {
+            var test, transitions;
+            transitions = {
+              'onFoo:Bar*splat': function() {
+                return 'bar match';
+              },
+              'onFoo:not:Bar*splat': function() {
+                return 'not bar match';
+              }
+            };
+            test = new Backbone.StateManager.State('foo', {
+              transitions: transitions
+            });
+            return expect(test.findTransition('onFoo', 'Baz123')()).toEqual('not bar match');
+          });
         });
       });
     });
