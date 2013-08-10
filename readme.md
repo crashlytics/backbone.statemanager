@@ -6,7 +6,7 @@ Simple, powerful state management for Backbone.js
 
 Backbone.StateManager is a module for Backbone.js that adds the ability to easily
 manage and utilize states in any size JavaScript application. It can be used as
-a stand alone object or in conjunction with a target object through it's addStateManager
+a stand alone object or in conjunction with a target object through its `addStateManager`
 method.
 
 ### Key Benefits
@@ -37,7 +37,7 @@ The latest stable releases can be found at the links:
 
 ## Getting Started
 
-Backbone.StateManager constructor takes two arguments, a state object and an options object, but neither is required.Passed in states will be automatically added and the options are set as an instance property.
+Backbone.StateManager constructor takes two arguments, a state object and an options object, but neither is required. Passed in states will be automatically added and the options are set as an instance property.
 
 ```coffee
   stateManager = new Backbone.StateManager
@@ -71,7 +71,7 @@ A state is intended to be as modular as possible, so each state is expected to c
 
 ### Defining State Transitions
 
-Transitions are used to execute additional functionality when moving between specified states. There are 4 types of transitions that Backbone.StateManager will defaultly look for: `onBeforeExitTo`, `onExitTo`, `onBeforeEnterFrom`, and `onEnterFrom`. Each transition is a key value pair, where the value is a method and the key defines the transition type and the specified state (eg `onEnterFrom:specifiedState`).
+Transitions are used to execute additional functionality when moving between specified states. There are 4 types of transitions that Backbone.StateManager will defaultly look for: `onBeforeExitTo`, `onExitTo`, `onBeforeEnterFrom`, and `onEnterFrom`. Each transition is a key value pair, where the value is a method and the key defines the transition type and the specified state (e.g. `onEnterFrom:specifiedState`).
 
 ### Adding a State
 
@@ -116,5 +116,7 @@ View = Backbone.View.extend
   initialize : -> Backbone.StateManager.addStateManager @
 
 ```
+
+**Note:** Similar to Backbone.js' `defaults` attribute, the `states` object will be shared among all instances of this state-managed view. Instead, define `states` as a function that returns an object consisting of your state definitions.
 
 ### [Github Issues](//github.com/crashlytics/backbone.statemanager/issues)
