@@ -18,6 +18,12 @@ tmp
 results
 
 bower_components
-node_modules
+src
 test
-!src/test
+node_modules
+config
+
+.bowerrc
+.coffeelintrc
+Gulpfile.coffee
+Gulpfile.js

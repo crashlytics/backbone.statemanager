@@ -1,11 +1,13 @@
 ###
-Backbone.Statemanager, v0.0.3
-Copyright (c)2012 Patrick Camacho and Mark Roseboom, Crashlytics
-Distributed under MIT license
-http://github.com/crashlytics/backbone.statemanager
+Backbone.Statemanager, v /* @echo VERSION */
+Copyright (c)/* @echo YEAR */ /* @echo AUTHOR */
+Distributed under /* @echo LICENSE */ license
+/* @echo REPO */
 ###
 
-Backbone.StateManager = ((Backbone, _) ->
+factory = (Backbone, _) ->
+  throw new ReferenceError('Backbone required') unless Backbone
+  throw new ReferenceError('Underscore required') unless _
 
   # Set our constructor - just a States object
   StateManager = (states, @options = {}) ->
@@ -41,11 +43,13 @@ Backbone.StateManager = ((Backbone, _) ->
         false
 
     enterState : (name, options = {}) ->
-      return false unless (state = @states.find name) and _.isFunction state.enter
+      unless (state = @states.find name) and _.isFunction state.enter
+        return false
 
       @trigger 'before:enter:state', name, state, options
 
-      # Find the the state we will be transitioning to and if it has a onBeforeEnterFrom method, call it
+      # Find the the state we will be transitioning to and if it has a
+      # onBeforeEnterFrom method, call it
       state.findTransition('onBeforeEnterFrom', options.fromState)? options
 
       state.enter options
@@ -58,7 +62,8 @@ Backbone.StateManager = ((Backbone, _) ->
       @
 
     exitState : (options = {}) ->
-      return false unless (state = @states.find @currentState) and _.isFunction state.exit
+      unless (state = @states.find @currentState) and _.isFunction state.exit
+        return false
 
       @trigger 'before:exit:state', @currentState, state, options
 
@@ -75,7 +80,8 @@ Backbone.StateManager = ((Backbone, _) ->
   # Setup our states object
   StateManager.States = (states) ->
     @states = {}
-    if states and _.isObject states then _.each states, (value, key) => @add key, value
+    if states and _.isObject states
+      _.each states, (value, key) => @add key, value
     @
 
   _.extend StateManager.States.prototype,
@@ -91,7 +97,7 @@ Backbone.StateManager = ((Backbone, _) ->
       return false unless _.isString name
       _.chain(@states).find((state) -> state.matchName name).value()
 
-    findInitial : -> (_.find @states, (value, name) => value.initial)?.name
+    findInitial : -> (_.find @states, (value, name) -> value.initial)?.name
 
   # Setup our State object
   StateManager.State = (@name, options) ->
@@ -104,9 +110,9 @@ Backbone.StateManager = ((Backbone, _) ->
 
     findTransition : (type, name) ->
       return false unless @transitions and _.isString(name) and _.isString type
-      _.find @transitions, (value, key) =>
+      _.find @transitions, (value, key) ->
         if key.indexOf("#{ type }:") is 0
-          if inverse = key.indexOf(":not:") is type.length
+          if inverse = key.indexOf(':not:') is type.length
             key = key.slice type.length + 5
           else
             key = key.slice type.length + 1
@@ -121,18 +127,24 @@ Backbone.StateManager = ((Backbone, _) ->
                 .replace(/\*\w+/g, '(.*?)')
     new RegExp "^#{ name }$"
 
-  # Function we can use to provide StateManager capabilities to views on construct
+  # Function we can use to provide StateManager capabilities to
+  # views on construct
   StateManager.addStateManager = (target, options = {}) ->
     new Error 'Target must be defined' unless target
-    # Allow statest to be a method (helpful for prototype definitions that get mutated with _.bind)
-    states = if _.isFunction target.states then target.states() else target.states
+    # Allow statest to be a method (helpful for prototype definitions that get
+    # mutated with _.bind)
+    states = _.result target, 'states'
+
     _deepBindAll states, target
-    target.stateManager = stateManager = new Backbone.StateManager states, options
-    target.triggerState = -> stateManager.triggerState.apply stateManager, arguments
+    stateManager = new Backbone.StateManager states, options
+    target.stateManager = stateManager
+
+    target.triggerState = _.bind stateManager.triggerState, stateManager
     target.getCurrentState = -> stateManager.getCurrentState()
 
     # Initialize the state manager, unless explictly told not to
-    stateManager.initialize options if options.initialize or _.isUndefined options.initialize
+    if options.initialize or _.isUndefined options.initialize
+      stateManager.initialize options
 
     # Cleanup
     delete target.states
@@ -147,5 +159,28 @@ Backbone.StateManager = ((Backbone, _) ->
         obj[key] = _deepBindAll(value, target)
     obj
 
-  StateManager
-)(Backbone, _)
+  Backbone.StateManager = StateManager
+
+((root, factory) ->
+  # Set up Backbone.Statemanager appropriately for the environment.
+  # Start with AMD.
+  if typeof define is 'function' and define.amd
+    define ['backbone', 'underscore'], (Backbone, _) ->
+      factory Backbone, _
+
+  # Next for Node.js or CommonJS
+  else if typeof exports isnt 'undefined'
+    Backbone = require 'backbone'
+    _ = require 'underscore'
+
+    StateManager = factory Backbone, _
+
+    if typeof module isnt 'undefined' and module.exports
+      module.exports = StateManager
+    else
+      exports.StateManger = StateManager
+
+  # Finally, as a browser global.
+  else
+    root.StateManager = factory root.Backbone, root._
+)(@, factory)
