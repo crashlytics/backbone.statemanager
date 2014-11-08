@@ -1,6 +1,20 @@
 {
   "name": "backbone.statemanager",
   "version": "0.0.4",
+  "main": "backbone.statemanager.js",
+  "description": "Simple, powerful state management for Backbone.js",
+  "authors": [
+    "Patrick Camacho", 
+    "Mark Roseboom", 
+    "Crashlytics"
+  ],
+  "keywords": [
+    "state",
+    "manager",
+    "statemanager",
+    "backbone"
+  ],
+  "license": "MIT",
   "ignore": [
     "**/.*",
     "node_modules",
@@ -13,6 +27,5 @@
   "dependencies": {
     "backbone": ">=1.1.2",
     "underscore": ">=1.5.0"
-  },
-  "main": "backbone.statemanager.js"
+  }
 }
