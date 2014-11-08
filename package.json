@@ -1,0 +1,47 @@
+{
+  "name": "backbone.statemanager",
+  "version": "0.0.4",
+  "description": "Simple, powerful state management for Backbone.js",
+  "main": "lib/backbone.statemanager.js",
+  "devDependencies": {
+    "coffee-script": "^1.8.0",
+    "del": "^0.1.3",
+    "gulp": "^3.8",
+    "gulp-bump": "^0.1.11",
+    "gulp-coffee": "^1.4.3",
+    "gulp-coffeelint": "~0.3.2",
+    "gulp-filter": "^1.0.2",
+    "gulp-jasmine": "^1.0.1",
+    "gulp-load-plugins": "~0.5.0",
+    "gulp-notify": "^2.0.1",
+    "gulp-plumber": "^0.5.6",
+    "gulp-preprocess": "^1.0.1",
+    "gulp-rename": "^1.2.0",
+    "gulp-uglify": "^1.0.1",
+    "run-sequence": "~0.3.6",
+    "rygr-util": "^1.0.1",
+    "underscore": "~1.6.0"
+  },
+  "scripts": {
+    "test": "gulp build && gulp test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/crashlytics/backbone.statemanager"
+  },
+  "keywords": [
+    "state",
+    "manager",
+    "backbone"
+  ],
+  "author": "Patrick Camacho, Mark Roseboom, Crashlytics",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/crashlytics/backbone.statemanager/issues"
+  },
+  "homepage": "https://github.com/crashlytics/backbone.statemanager",
+  "dependencies": {
+    "backbone": "^1.1.2",
+    "underscore": "^1.7.0"
+  }
+}

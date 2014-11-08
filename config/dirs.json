@@ -1,0 +1,6 @@
+{
+  "src":  "src",
+  "dest": "./",
+  "test": "test"
+
+}
