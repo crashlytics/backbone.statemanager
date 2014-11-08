@@ -1,7 +1,6 @@
 {
   "name": "backbone.statemanager",
   "version": "0.0.4",
-  "private": true,
   "ignore": [
     "**/.*",
     "node_modules",
