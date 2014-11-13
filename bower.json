@@ -1,11 +1,11 @@
 {
   "name": "backbone.statemanager",
-  "version": "0.0.4",
+  "version": "0.0.6",
   "main": "backbone.statemanager.js",
   "description": "Simple, powerful state management for Backbone.js",
   "authors": [
-    "Patrick Camacho", 
-    "Mark Roseboom", 
+    "Patrick Camacho",
+    "Mark Roseboom",
     "Crashlytics"
   ],
   "keywords": [

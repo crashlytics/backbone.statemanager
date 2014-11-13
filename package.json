@@ -1,6 +1,6 @@
 {
   "name": "backbone.statemanager",
-  "version": "0.0.4",
+  "version": "0.0.7",
   "description": "Simple, powerful state management for Backbone.js",
   "main": "lib/backbone.statemanager.js",
   "devDependencies": {

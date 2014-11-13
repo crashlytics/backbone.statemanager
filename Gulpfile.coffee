@@ -12,16 +12,6 @@ _ = require 'underscore'
 {config} = require 'rygr-util'
 config.initialize 'config/*.json'
 
-pjson = require('./package.json')
-
-context =
-  ENV: process.env.NODE_ENV or 'development'
-  VERSION: pjson.version
-  YEAR: new Date().getFullYear()
-  AUTHOR: pjson.author
-  LICENSE: pjson.license
-  REPO: pjson.repository.url
-
 # ------------------------------------------------------------------------------
 # Custom vars and methods
 # ------------------------------------------------------------------------------
@@ -46,6 +36,16 @@ gulp.task 'clean', (cb) ->
 # Compile assets
 # ------------------------------------------------------------------------------
 gulp.task 'compile', ->
+  pjson = JSON.parse fs.readFileSync('./package.json')
+
+  context =
+    ENV: process.env.NODE_ENV or 'development'
+    VERSION: pjson.version
+    YEAR: new Date().getFullYear()
+    AUTHOR: pjson.author
+    LICENSE: pjson.license
+    REPO: pjson.repository.url
+
   gulp.src("#{ config.dirs.src }/**/*.coffee")
     .pipe($.plumber errorHandler: alertError)
     .pipe($.preprocess context: context)
@@ -68,7 +68,7 @@ gulp.task 'minify', ->
 # Build
 # ------------------------------------------------------------------------------
 gulp.task 'build', (cb) ->
-  runSequence 'clean', 'compile', cb
+  runSequence 'clean', 'compile', 'minify', cb
 
 # ------------------------------------------------------------------------------
 # Test
@@ -93,7 +93,6 @@ gulp.task 'test', (cb) ->
     (cb) ->
       sequence = [if type then "bump:#{ type }" else 'build']
       sequence.push 'test'
-      sequence.push 'minify'
       sequence.push ->
         spawn = require('child_process').spawn
         spawn('npm', ['publish'], stdio: 'inherit').on 'close', cb
