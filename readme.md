@@ -105,7 +105,7 @@ StateManager provides an easy method to painlessly add a StateManager to any obj
 View = Backbone.View.extend
   states :
     foo :
-      enter : -> console.log 'enter bar'
+      enter : -> console.log 'enter foo'
       exit : -> console.log 'exit foo'
       transitions :
         'onExitTo:bar' : -> 'just exited and bar is about to be entered'
